@@ -1,0 +1,1 @@
+dotenv.config({ path: path.resolve(projectRoot, '.env.local') });

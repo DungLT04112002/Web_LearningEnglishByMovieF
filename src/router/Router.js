@@ -1,0 +1,70 @@
+const express = require('express');
+const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// --- Bắt đầu Cấu hình Multer (Chuyển từ Controller nếu cần) ---
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        // Sử dụng path.join để đảm bảo đường dẫn đúng trên các hệ điều hành
+        const uploadDir = path.join(__dirname, '../../public/uploads/subtitles');
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, `subtitle-${uniqueSuffix}${path.extname(file.originalname)}`);
+    }
+});
+
+const fileFilter = (req, file, cb) => {
+    if (file.mimetype === 'application/x-subrip' || file.originalname.toLowerCase().endsWith('.srt')) {
+        cb(null, true);
+    } else {
+        cb(new Error('Only .srt files are allowed!'), false);
+    }
+};
+
+const upload = multer({
+    storage: storage,
+    fileFilter: fileFilter,
+    limits: { fileSize: 1024 * 1024 * 5 } // Giới hạn 5MB
+});
+// --- Kết thúc Cấu hình Multer ---
+
+
+// Import Controllers
+const movieController = require('../Controller/VideoController/ViedeoController');
+const subController = require('../Controller/SubComtroller/SubController');
+
+// Middleware xử lý JSON (giữ nguyên)
+// Express v4.16.0 trở lên có sẵn express.json() và express.urlencoded(), không cần body-parser riêng
+router.use(express.json({ limit: '10mb' }));
+router.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Movie routes (Không cần Multer)
+router.post('/api/movies', movieController.createMovie);
+router.get('/api/movies', movieController.getMovies);
+router.get('/api/movies/:id', movieController.getMovieById);
+router.put('/api/movies/:id', movieController.updateMovie);
+router.delete('/api/movies/:id', movieController.deleteMovie);
+
+
+// --- Subtitle routes ---
+// Áp dụng middleware multer cho route thêm mới subtitle
+router.post('/api/subtitles', upload.single('subtitleFile'), subController.addSubtitle);
+// Lấy tất cả subtitles (Không cần Multer)
+router.get('/api/subtitles', subController.getAllSubtitles);
+// Lấy subtitles của một phim (Không cần Multer)
+router.get('/api/movies/:movie_id/subtitles', subController.getMovieSubtitles);
+// Lấy subtitle theo ngôn ngữ (Không cần Multer)
+router.get('/api/movies/:movie_id/subtitles/:language', subController.getSubtitleByLanguage);
+// Áp dụng middleware multer cho route cập nhật subtitle
+router.put('/api/subtitles/:id', upload.single('subtitleFile'), subController.updateSubtitle);
+// Xóa subtitle (Không cần Multer)
+router.delete('/api/subtitles/:id', subController.deleteSubtitle);
+
+module.exports = router; 
