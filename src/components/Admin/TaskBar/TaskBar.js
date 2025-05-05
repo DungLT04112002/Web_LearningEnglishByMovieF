@@ -4,11 +4,14 @@ const TaskBar = () => {
 
     return (
         <div className=" items-center flex bg-black bg-opacity-50  px-6 py-3" >
-            < div className="flex items-center  " >
-                <img src="/assets/NLogo.png" alt="Logo" className="h-[6vh] mr-[40]" />
-                <span className="text-white text-xl font-bold">M Learning</span>
-            </div >
+            <Link href="/Navigate/manager/homepage">
+                <div className="flex items-center  " >
 
+                    <img src="/assets/NLogo.png" alt="Logo" className="h-[6vh] mr-[40]" />
+                    <span className="text-white text-xl font-bold">M Learning</span>
+
+                </div >
+            </Link>
             {/* Thanh tìm kiếm */}
             < div className=" flex  w-1/3 mx-[5vw]" >
                 <input

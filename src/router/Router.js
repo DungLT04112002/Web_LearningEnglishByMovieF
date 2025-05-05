@@ -39,6 +39,9 @@ const upload = multer({
 // Import Controllers
 const movieController = require('../Controller/VideoController/ViedeoController');
 const subController = require('../Controller/SubComtroller/SubController');
+const quizzController = require('../Controller/QuizzController/QuizzController');
+const questionController = require('../Controller/QuestionController/QuestionController');
+const optionController = require('../Controller/OptionController/OptionController');
 
 // Middleware xử lý JSON (giữ nguyên)
 // Express v4.16.0 trở lên có sẵn express.json() và express.urlencoded(), không cần body-parser riêng
@@ -66,5 +69,29 @@ router.get('/api/movies/:movie_id/subtitles/:language', subController.getSubtitl
 router.put('/api/subtitles/:id', upload.single('subtitleFile'), subController.updateSubtitle);
 // Xóa subtitle (Không cần Multer)
 router.delete('/api/subtitles/:id', subController.deleteSubtitle);
+
+// Quiz routes
+router.post('/api/quizzes', quizzController.addQuiz);
+router.get('/api/quizzes', quizzController.getAllQuizzes);
+router.get('/api/quizzes/:id', quizzController.getQuizById);
+router.put('/api/quizzes/:id', quizzController.updateQuiz);
+router.delete('/api/quizzes/:id', quizzController.deleteQuiz);
+router.get('/api/quizzes/movie/:movie_id', quizzController.getQuizzesByMovie);
+
+// Question routes
+router.post('/api/questions', questionController.addQuestion);
+router.get('/api/questions', questionController.getAllQuestions);
+router.get('/api/questions/:id', questionController.getQuestionById);
+router.put('/api/questions/:id', questionController.updateQuestion);
+router.delete('/api/questions/:id', questionController.deleteQuestion);
+router.get('/api/questions/quiz/:quiz_id', questionController.getQuestionsByQuiz);
+
+// Option routes
+router.post('/api/options', optionController.addOption);
+router.get('/api/options', optionController.getAllOptions);
+router.get('/api/options/:id', optionController.getOptionById);
+router.put('/api/options/:id', optionController.updateOption);
+router.delete('/api/options/:id', optionController.deleteOption);
+router.get('/api/options/question/:question_id', optionController.getOptionsByQuestion);
 
 module.exports = router; 

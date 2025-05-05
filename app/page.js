@@ -4,7 +4,8 @@ import HomePageAdmin from "@/src/components/Admin/HPage/HomePage";
 const page = () => {
     return (
         <div className="w-[100vw] h-[100vh]">
-            <HomePageAdmin></HomePageAdmin>
+            <HomePage></HomePage>
+            {/* <HomePageAdmin></HomePageAdmin> */}
         </div>
 
     );

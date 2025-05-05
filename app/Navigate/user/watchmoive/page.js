@@ -3,7 +3,7 @@ import VideoDemo from "@/src/components/VideoDemo";
 const page = () => {
     return (
         <div>
-            <VideoDemo></VideoDemo>
+            <VideoDemo movieId={2}></VideoDemo>
         </div>
     )
 }
