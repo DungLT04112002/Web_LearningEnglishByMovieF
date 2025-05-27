@@ -15,14 +15,11 @@ const QuizzDemo = () => {
     const [subtitle, setSubtitle] = useState([]);
     const [dataInput, setDataInput] = useState("");
     // Thêm state cho subtitle test
-    const [testSubtitle] = useState("Welcome to Element CityHow about we just go with Bernie and Cinder?");
     useEffect(() => {
         fecthSubTitle();
     }, []);
     const fecthSubTitle = async () => {
         try {
-            // router.get('/api/movies/:movie_id/subtitles', subController.getMovieSubtitles);
-
             const response = await axios.get(`${BASE_API_URL}/movies/1/subtitles`);
             console.log("subtitles ", response.data[0]);
             const englistSubtitle = response.data[0].srt_content;
@@ -31,14 +28,14 @@ const QuizzDemo = () => {
 
         }
         catch (error) {
-            console.error("Error fetching subtitles:", error);
+            console.error("Lỗi không thể lấy subtile từ db:", error);
         }
     }
     const parseSubtitlesFromText = (subtitleContent) => {
         if (typeof subtitleContent !== 'string' || !subtitleContent.trim()) {
-            console.error("Subtitle content is empty or not a string.");
-            setSubtitle([]); // Đặt thành mảng rỗng nếu nội dung không hợp lệ
-            setDataInput(""); // Cũng đặt dataInput thành rỗng
+            console.error("Subtitle rỗng hoặc không phải chuỗi .");
+            setSubtitle([]);
+            setDataInput("");
             return;
         }
 
@@ -48,24 +45,20 @@ const QuizzDemo = () => {
 
             const lines = block.trim().split('\n');
             if (!lines || lines.length < 2) {
-                console.warn(`Skipping malformed block ${index + 1}: Not enough lines. Content:`, JSON.stringify(block));
                 return null;
             }
             if (!lines[0].includes('-->')) {
-                console.warn(`Skipping malformed block ${index + 1}: Missing or invalid timecode line. Content:`, JSON.stringify(block));
                 return null;
             }
             const textContent = lines.slice(1).join('\n').trim();
+
+
             return textContent;
 
         }).filter(text => text !== null && text !== '');
-
-        console.log("Parsed Subtitle Texts Array:", parsedSubtitleTexts);
         setSubtitle(parsedSubtitleTexts);
-
-
         const combinedTextForInput = parsedSubtitleTexts.join(' ');
-        console.log("Combined Text for Input:", combinedTextForInput);
+
         setDataInput(combinedTextForInput);
     };
     // Hàm tạo quiz từ phụ đề hiện tại
@@ -84,7 +77,7 @@ const QuizzDemo = () => {
             const quizData = await createQuiz(textToUse);
             setQuiz(quizData);
         } catch (error) {
-            console.error("Error creating quiz:", error);
+            console.error("Lỗi tạo:", error);
             setQuizError(`Lỗi tạo quiz: ${error.message}`);
         } finally {
             setQuizLoading(false);

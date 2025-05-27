@@ -42,7 +42,8 @@ const subController = require('../Controller/SubComtroller/SubController');
 const quizzController = require('../Controller/QuizzController/QuizzController');
 const questionController = require('../Controller/QuestionController/QuestionController');
 const optionController = require('../Controller/OptionController/OptionController');
-
+const authController = require('../Controller/AuthController/AuthController');
+const auth = require("../Middlerware/Auth");
 // Middleware xử lý JSON (giữ nguyên)
 // Express v4.16.0 trở lên có sẵn express.json() và express.urlencoded(), không cần body-parser riêng
 router.use(express.json({ limit: '10mb' }));
@@ -93,5 +94,8 @@ router.get('/api/options/:id', optionController.getOptionById);
 router.put('/api/options/:id', optionController.updateOption);
 router.delete('/api/options/:id', optionController.deleteOption);
 router.get('/api/options/question/:question_id', optionController.getOptionsByQuestion);
+
+//GoogleAuth
+router.post('/api/auth/google', authController.LoginGoogle);
 
 module.exports = router; 

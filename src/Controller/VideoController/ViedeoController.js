@@ -2,36 +2,33 @@ const connection = require('../../config/database');
 
 // Thêm mới một bộ phim
 const createMovie = async (req, res) => {
-    const { title, description, thumbnail_url, video_url, release_year } = req.body;
+    const { title, description, thumbnail_url, video_url, release_year, genre, difficulty } = req.body;
+    const movieGenre = genre || null;
 
     try {
-        const query = `
-            INSERT INTO movies (title, description, thumbnail_url, video_url, release_year)
-            VALUES (?, ?, ?, ?, ?)
+        const sql = `
+            INSERT INTO movies (title, description, thumbnail_url, video_url, release_year, genre, difficulty)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
         `;
 
-        connection.query(
-            query,
-            [title, description, thumbnail_url, video_url, release_year],
-            (error, results) => {
-                if (error) {
-                    console.error('Error creating movie:', error);
-                    return res.status(500).json({
-                        error: 'Error creating movie',
-                        details: error.message
-                    });
-                }
-                res.status(201).json({
-                    message: 'Movie created successfully',
-                    movieId: results.insertId
+        const data = [title, description, thumbnail_url, video_url, release_year, movieGenre, difficulty];
+
+        connection.query(sql, data, (err, result) => {
+            if (err) {
+                return res.status(500).json({
+                    error: 'Error creating movie',
+                    details: err.message
                 });
             }
-        );
-    } catch (error) {
-        console.error('Error in createMovie:', error);
+            res.status(201).json({
+                message: 'Movie created successfully',
+                movieId: result.insertId
+            });
+        });
+    } catch (err) {
         res.status(500).json({
             error: 'Internal server error',
-            details: error.message
+            details: err.message
         });
     }
 };
@@ -39,23 +36,21 @@ const createMovie = async (req, res) => {
 // Lấy danh sách phim
 const getMovies = async (req, res) => {
     try {
-        const query = 'SELECT * FROM movies ORDER BY created_at DESC';
+        const sql = 'SELECT * FROM movies ORDER BY created_at DESC';
 
-        connection.query(query, (error, results) => {
-            if (error) {
-                console.error('Error fetching movies:', error);
+        connection.query(sql, (err, result) => {
+            if (err) {
                 return res.status(500).json({
                     error: 'Error fetching movies',
-                    details: error.message
+                    details: err.message
                 });
             }
-            res.status(200).json(results);
+            res.status(200).json(result);
         });
-    } catch (error) {
-        console.error('Error in getMovies:', error);
+    } catch (err) {
         res.status(500).json({
             error: 'Internal server error',
-            details: error.message
+            details: err.message
         });
     }
 };
@@ -65,28 +60,26 @@ const getMovieById = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const query = 'SELECT * FROM movies WHERE id = ?';
+        const sql = 'SELECT * FROM movies WHERE id = ?';
 
-        connection.query(query, [id], (error, results) => {
-            if (error) {
-                console.error('Error fetching movie:', error);
+        connection.query(sql, [id], (err, result) => {
+            if (err) {
                 return res.status(500).json({
                     error: 'Error fetching movie',
-                    details: error.message
+                    details: err.message
                 });
             }
 
-            if (results.length === 0) {
+            if (result.length === 0) {
                 return res.status(404).json({ message: 'Movie not found' });
             }
 
-            res.status(200).json(results[0]);
+            res.status(200).json(result[0]);
         });
-    } catch (error) {
-        console.error('Error in getMovieById:', error);
+    } catch (err) {
         res.status(500).json({
             error: 'Internal server error',
-            details: error.message
+            details: err.message
         });
     }
 };
@@ -94,40 +87,37 @@ const getMovieById = async (req, res) => {
 // Cập nhật thông tin phim
 const updateMovie = async (req, res) => {
     const { id } = req.params;
-    const { title, description, thumbnail_url, video_url, release_year } = req.body;
+    const { title, description, thumbnail_url, video_url, release_year, genre, difficulty } = req.body;
+    const movieGenre = genre || null;
 
     try {
-        const query = `
+        const sql = `
             UPDATE movies 
             SET title = ?, description = ?, thumbnail_url = ?, 
-                video_url = ?, release_year = ?
+                video_url = ?, release_year = ?, genre = ?, difficulty = ?
             WHERE id = ?
         `;
 
-        connection.query(
-            query,
-            [title, description, thumbnail_url, video_url, release_year, id],
-            (error, results) => {
-                if (error) {
-                    console.error('Error updating movie:', error);
-                    return res.status(500).json({
-                        error: 'Error updating movie',
-                        details: error.message
-                    });
-                }
+        const data = [title, description, thumbnail_url, video_url, release_year, movieGenre, difficulty, id];
 
-                if (results.affectedRows === 0) {
-                    return res.status(404).json({ message: 'Movie not found' });
-                }
-
-                res.status(200).json({ message: 'Movie updated successfully' });
+        connection.query(sql, data, (err, result) => {
+            if (err) {
+                return res.status(500).json({
+                    error: 'Error updating movie',
+                    details: err.message
+                });
             }
-        );
-    } catch (error) {
-        console.error('Error in updateMovie:', error);
+
+            if (result.affectedRows === 0) {
+                return res.status(404).json({ message: 'Movie not found' });
+            }
+
+            res.status(200).json({ message: 'Movie updated successfully' });
+        });
+    } catch (err) {
         res.status(500).json({
             error: 'Internal server error',
-            details: error.message
+            details: err.message
         });
     }
 };
@@ -137,28 +127,26 @@ const deleteMovie = async (req, res) => {
     const { id } = req.params;
 
     try {
-        const query = 'DELETE FROM movies WHERE id = ?';
+        const sql = 'DELETE FROM movies WHERE id = ?';
 
-        connection.query(query, [id], (error, results) => {
-            if (error) {
-                console.error('Error deleting movie:', error);
+        connection.query(sql, [id], (err, result) => {
+            if (err) {
                 return res.status(500).json({
                     error: 'Error deleting movie',
-                    details: error.message
+                    details: err.message
                 });
             }
 
-            if (results.affectedRows === 0) {
+            if (result.affectedRows === 0) {
                 return res.status(404).json({ message: 'Movie not found' });
             }
 
             res.status(200).json({ message: 'Movie deleted successfully' });
         });
-    } catch (error) {
-        console.error('Error in deleteMovie:', error);
+    } catch (err) {
         res.status(500).json({
             error: 'Internal server error',
-            details: error.message
+            details: err.message
         });
     }
 };

@@ -5,9 +5,13 @@ import Taskbar from './Cus/TaskBar';
 import ReactPlayer from 'react-player';
 import axios from 'axios';
 
+import { useRouter, useParams } from 'next/navigation';
+
 const BASE_API_URL = "http://localhost:8081/api";
 
-const VideoDemo = ({ movieId }) => {
+const VideoDemo = () => {
+    const router = useRouter();
+    const params = useParams();
     const [currentTime, setCurrentTime] = useState(0);
     const [isEngSub, setIsEngSub] = useState(true);
     const [isVietSub, setIsVietSub] = useState(true);
@@ -17,15 +21,16 @@ const VideoDemo = ({ movieId }) => {
     const activeSubtitleRef = useRef(null);
 
     useEffect(() => {
-        if (movieId) {
+        console.log("movieid", params.movieId);
+        if (params?.movieId) {
             fetchMovieDetails();
             fetchSubtitles();
         }
-    }, [movieId]);
+    }, [params]);
 
     const fetchMovieDetails = async () => {
         try {
-            const response = await axios.get(`${BASE_API_URL}/movies/${movieId}`);
+            const response = await axios.get(`${BASE_API_URL}/movies/${params.movieId}`);
             setMovieUrl(response.data.video_url);
         } catch (error) {
             console.error("Error fetching movie details:", error);
@@ -35,14 +40,14 @@ const VideoDemo = ({ movieId }) => {
     const fetchSubtitles = async () => {
         try {
             // Fetch English subtitles
-            const engResponse = await axios.get(`${BASE_API_URL}/movies/${movieId}/subtitles/en`);
+            const engResponse = await axios.get(`${BASE_API_URL}/movies/${params.movieId}/subtitles/en`);
             if (engResponse.data && engResponse.data.srt_content) {
                 const engSubs = parseSubtitlesFromText(engResponse.data.srt_content);
                 setEnglishSubtitles(engSubs);
             }
 
             // Fetch Vietnamese subtitles
-            const vieResponse = await axios.get(`${BASE_API_URL}/movies/${movieId}/subtitles/vi`);
+            const vieResponse = await axios.get(`${BASE_API_URL}/movies/${params.movieId}/subtitles/vi`);
             if (vieResponse.data && vieResponse.data.srt_content) {
                 const vieSubs = parseSubtitlesFromText(vieResponse.data.srt_content);
                 setVietnameseSubtitles(vieSubs);
@@ -74,8 +79,8 @@ const VideoDemo = ({ movieId }) => {
                 if (isNaN(startTime) || isNaN(endTime)) return null;
 
                 return {
-                    startTime: Math.floor(startTime), // Chỉ lấy phần giây
-                    endTime: Math.floor(endTime),     // Chỉ lấy phần giây
+                    startTime: Math.floor(startTime),
+                    endTime: Math.floor(endTime),
                     text: textContent
                 };
             } catch (error) {
@@ -169,7 +174,7 @@ const VideoDemo = ({ movieId }) => {
                         <Suspense fallback={<div>Loading...</div>}>
                             {movieUrl && (
                                 <ReactPlayer
-                                    url={movieUrl}
+                                    //  url={movieUrl}
                                     controls={true}
                                     width="100%"
                                     height="100%"
@@ -192,21 +197,27 @@ const VideoDemo = ({ movieId }) => {
                         <div className="flex gap-3 justify-center">
                             <button
                                 onClick={toggleBothSubs}
-                                className="bg-green-500 text-white px-4 py-2 rounded border-none cursor-pointer transition-all duration-300 hover:bg-green-600 hover:-translate-y-0.5"
+                                className="bg-green-500 text-white px-4 py-2 rounded border-none cursor-pointer "
                             >
                                 Xem song ngữ
                             </button>
                             <button
                                 onClick={toggleEnglishOnly}
-                                className="bg-green-500 text-white px-4 py-2 rounded border-none cursor-pointer transition-all duration-300 hover:bg-green-600 hover:-translate-y-0.5"
+                                className="bg-green-500 text-white px-4 py-2 rounded border-none cursor-pointer "
                             >
                                 Chỉ tiếng Anh
                             </button>
                             <button
                                 onClick={toggleVietnameseOnly}
-                                className="bg-green-500 text-white px-4 py-2 rounded border-none cursor-pointer transition-all duration-300 hover:bg-green-600 hover:-translate-y-0.5"
+                                className="bg-green-500 text-white px-4 py-2 rounded border-none cursor-pointer"
                             >
                                 Chỉ tiếng Việt
+                            </button>
+                            <button
+                                onClick={() => router.push(`/Navigate/user/practicepage/${params.movieId}`)}
+                                className="bg-blue-500 text-white px-4 py-2 rounded border-none cursor-pointer "
+                            >
+                                Luyện tập
                             </button>
                         </div>
                     </div>
@@ -221,7 +232,7 @@ const VideoDemo = ({ movieId }) => {
                     <div className="flex-1 overflow-y-auto pr-2.5 scrollbar">
                         {vietnameseSubtitles.map((sub, index) => {
                             const isActive = findMatchingSubtitle([sub], currentTime) !== undefined;
-                            // Tìm phụ đề tiếng Anh tương ứng với thời gian của phụ đề tiếng Việt
+
                             const engSub = findMatchingSubtitle(englishSubtitles, sub.startTime);
                             return (
                                 <div
@@ -250,6 +261,7 @@ const VideoDemo = ({ movieId }) => {
                         })}
                     </div>
                 </div>
+
             </div>
         </div>
     </div>

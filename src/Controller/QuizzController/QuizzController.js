@@ -2,7 +2,7 @@ const connection = require('../../config/database');
 
 // Thêm quiz mới
 const addQuiz = async (req, res) => {
-    const { movie_id, passage } = req.body;
+    const { movie_id, passage, quiz_type } = req.body;
 
     try {
         // Kiểm tra xem phim có tồn tại không
@@ -24,13 +24,13 @@ const addQuiz = async (req, res) => {
 
                 // Thêm quiz mới
                 const query = `
-                    INSERT INTO quizzes (movie_id, passage)
-                    VALUES (?, ?)
+                    INSERT INTO quizzes (movie_id, passage, quiz_type)
+                    VALUES (?, ?, ?)
                 `;
 
                 connection.query(
                     query,
-                    [movie_id, passage],
+                    [movie_id, passage, quiz_type],
                     (error, results) => {
                         if (error) {
                             console.error('Error adding quiz:', error);
@@ -118,7 +118,7 @@ const getQuizById = async (req, res) => {
 // Cập nhật quiz
 const updateQuiz = async (req, res) => {
     const { id } = req.params;
-    const { movie_id, passage } = req.body;
+    const { movie_id, passage, quiz_type } = req.body;
 
     try {
         // Kiểm tra quiz tồn tại
@@ -158,13 +158,13 @@ const updateQuiz = async (req, res) => {
                         // Cập nhật quiz
                         const query = `
                             UPDATE quizzes 
-                            SET movie_id = ?, passage = ?
+                            SET movie_id = ?, passage = ?, quiz_type = ?
                             WHERE id = ?
                         `;
 
                         connection.query(
                             query,
-                            [movie_id, passage, id],
+                            [movie_id, passage, quiz_type, id],
                             (error, results) => {
                                 if (error) {
                                     console.error('Error updating quiz:', error);

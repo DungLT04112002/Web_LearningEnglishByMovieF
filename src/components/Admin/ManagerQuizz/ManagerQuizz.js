@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiTrash2, FiSave } from 'react-icons/fi';
 import axios from 'axios';
-import createQuiz from '../../../server/openAI.mjs';
+import createQuiz, { QUIZ_TYPES } from '../../../server/openAI.mjs';
 import MQuiz from './MQuiz';
 
 const BASE_API_URL = 'http://localhost:8081/api';
@@ -22,6 +22,7 @@ const ManagerQuizz = () => {
     const [generatedQuizzes, setGeneratedQuizzes] = useState([]);
     const [quizLoading, setQuizLoading] = useState(false);
     const [quizError, setQuizError] = useState(null);
+    const [selectedQuizType, setSelectedQuizType] = useState(QUIZ_TYPES.READING);
 
     // Lấy danh sách phim
     useEffect(() => {
@@ -95,7 +96,7 @@ const ManagerQuizz = () => {
         try {
             setQuizLoading(true);
             setQuizError(null);
-            const quizData = await createQuiz(subtitle);
+            const quizData = await createQuiz(subtitle, selectedQuizType);
             setGeneratedQuizzes(quizData);
         } catch (error) {
             console.error('Error creating quiz:', error);
@@ -116,7 +117,8 @@ const ManagerQuizz = () => {
             // Lưu quiz
             const quizResponse = await axios.post(`${BASE_API_URL}/quizzes`, {
                 movie_id: selectedMovie,
-                passage: quiz.passage
+                passage: quiz.passage,
+                quiz_type: selectedQuizType
             });
 
             const quizId = quizResponse.data.quizId;
@@ -168,7 +170,7 @@ const ManagerQuizz = () => {
                 <select
                     value={selectedMovie}
                     onChange={(e) => handleMovieSelect(e.target.value)}
-                    className="w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full rounded-md border text-black border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
                 >
                     <option value="">-- Chọn phim --</option>
                     {movies.map((movie) => (
@@ -182,7 +184,24 @@ const ManagerQuizz = () => {
             {/* Selected Movie Info */}
             {selectedMovie && (
                 <div className="mb-6 p-4 bg-white rounded-lg shadow">
-                    <h2 className="text-xl font-semibold mb-2">{selectedMovieTitle}</h2>
+                    <h2 className="text-xl text-black font-bold mb-4">{selectedMovieTitle}</h2>
+
+                    <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Chọn loại bài tập
+                        </label>
+                        <select
+                            value={selectedQuizType}
+                            onChange={(e) => setSelectedQuizType(e.target.value)}
+                            className="w-full rounded-md border text-black border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                            <option value={QUIZ_TYPES.READING}>Bài đọc hiểu</option>
+                            <option value={QUIZ_TYPES.DIALOGUE_REORDERING}>Sắp xếp hội thoại</option>
+                            <option value={QUIZ_TYPES.TRANSLATION}>Dịch câu</option>
+                            <option value={QUIZ_TYPES.EQUIVALENT}>Chọn câu tương đương</option>
+                        </select>
+                    </div>
+
                     <button
                         onClick={handleCreateQuiz}
                         disabled={quizLoading || subtitleLoading}
@@ -208,7 +227,10 @@ const ManagerQuizz = () => {
                         {generatedQuizzes.map((quiz, index) => (
                             <div key={index} className="bg-white rounded-lg shadow-md p-6">
                                 <div className="flex justify-between items-start mb-4">
-                                    <h3 className="text-lg font-semibold text-gray-800">Quiz #{index + 1}</h3>
+                                    <div>
+                                        <h3 className="text-lg font-semibold text-black">Quiz #{index + 1}</h3>
+                                        <p className="text-sm text-gray-500">Loại: {selectedQuizType}</p>
+                                    </div>
                                     <div className="space-x-2">
                                         <button
                                             onClick={() => handleSaveQuiz(quiz)}
@@ -227,7 +249,9 @@ const ManagerQuizz = () => {
                                     </div>
                                 </div>
 
-                                <p className="text-gray-700 mb-4">{quiz.passage}</p>
+                                {quiz.passage && (
+                                    <p className="text-gray-700 mb-4">{quiz.passage}</p>
+                                )}
 
                                 <div className="space-y-4">
                                     {quiz.questions.map((question, qIndex) => (
@@ -242,7 +266,7 @@ const ManagerQuizz = () => {
                                             </ul>
                                             <div className="mt-2 text-sm text-gray-600">
                                                 <p><span className="font-medium">Giải thích:</span> {question.explanation}</p>
-                                                <p><span className="font-medium">Trích dẫn:</span> {question.quote}</p>
+                                                {question.quote && <p><span className="font-medium">Trích dẫn:</span> {question.quote}</p>}
                                             </div>
                                         </div>
                                     ))}

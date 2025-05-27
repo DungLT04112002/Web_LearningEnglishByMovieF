@@ -1,62 +1,47 @@
 "use client"; // Chỉ định đây là Client Component
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { FiEdit, FiTrash2, FiPlus, FiEye } from 'react-icons/fi'; // Thêm FiEye nếu muốn xem trước
-import axios from 'axios'; // Sử dụng axios cho các yêu cầu HTTP
+import { FiEdit, FiTrash2, FiPlus, FiEye, FiBook } from 'react-icons/fi';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
 
-// Định nghĩa kiểu dữ liệu cho một bộ phim (TypeScript-like, for clarity)
-// interface Movie {
-//     id: number;
-//     title: string;
-//     description: string;
-//     thumbnail_url: string;
-//     video_url: string;
-//     release_year: number;
-//     created_at?: string; // Optional
-// }
-
-const BASE_API_URL = 'http://localhost:8081/api'; // Đặt URL gốc của API ở đây
+const BASE_API_URL = 'http://localhost:8081/api';
 
 const MMovie = () => {
-    const [movies, setMovies] = useState([]); // State lưu danh sách phim
-    const [showModal, setShowModal] = useState(false); // State điều khiển hiển thị modal
-    const [loading, setLoading] = useState(false); // State trạng thái loading
-    const [editingMovie, setEditingMovie] = useState(null); // State lưu phim đang chỉnh sửa (null nếu là thêm mới)
-    const [currentMovieData, setCurrentMovieData] = useState({ // State lưu dữ liệu form
+    const router = useRouter();
+    const [movies, setMovies] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [editingMovie, setEditingMovie] = useState(null);
+    const [currentMovieData, setCurrentMovieData] = useState({
         title: '',
         description: '',
         thumbnail_url: '',
         video_url: '',
         release_year: '',
+        genre: '',
+        difficulty: 1
     });
-    const [error, setError] = useState(null); // State lưu lỗi
 
-    // --- Hàm gọi API ---
 
-    // Hàm lấy danh sách phim
     const fetchMovies = useCallback(async () => {
         setLoading(true);
-        setError(null);
         try {
             const response = await axios.get(`${BASE_API_URL}/movies`);
-            setMovies(response.data || []); // Đảm bảo movies luôn là mảng
+            setMovies(response.data || []);
         } catch (err) {
-            console.error("Error fetching movies:", err);
-            setError("Failed to fetch movies. Please check the API connection.");
-            setMovies([]); // Reset về mảng rỗng khi lỗi
+            setMovies([]);
         } finally {
             setLoading(false);
         }
-    }, []); // useCallback để tránh tạo lại hàm mỗi lần render
+    }, []);
 
-    // Fetch phim khi component mount lần đầu
+
     useEffect(() => {
         fetchMovies();
-    }, [fetchMovies]); // Phụ thuộc vào fetchMovies
+    }, [fetchMovies]);
 
-    // --- Hàm xử lý sự kiện ---
 
-    // Thay đổi giá trị input trong form
     const handleInputChange = (event) => {
         const { name, value } = event.target;
         setCurrentMovieData(prevData => ({
@@ -66,114 +51,103 @@ const MMovie = () => {
         console.log(event.target.value);
     };
 
-    // Mở modal để thêm phim mới
+
     const handleAddClick = () => {
-        setEditingMovie(null); // Đảm bảo không ở chế độ sửa
-        setCurrentMovieData({ // Reset form data
+        setEditingMovie(null);
+        setCurrentMovieData({
             title: '',
             description: '',
             thumbnail_url: '',
             video_url: '',
             release_year: '',
+            genre: '',
+            difficulty: 1
         });
-        setError(null); // Xóa lỗi cũ
         setShowModal(true);
     };
 
-    // Mở modal để sửa phim
+
     const handleEditClick = (movie) => {
-        setEditingMovie(movie); // Đặt phim đang sửa
-        setCurrentMovieData({ // Điền dữ liệu phim vào form
+        setEditingMovie(movie);
+        setCurrentMovieData({
             title: movie.title || '',
             description: movie.description || '',
             thumbnail_url: movie.thumbnail_url || '',
             video_url: movie.video_url || '',
             release_year: movie.release_year || '',
+            genre: movie.genre || '',
+            difficulty: movie.difficulty || 1
         });
         console.log(movie);
-
-        setError(null);
         setShowModal(true);
     };
 
-    // Đóng modal
+
     const closeModal = () => {
         setShowModal(false);
-        setEditingMovie(null); // Reset trạng thái sửa
-        setError(null); // Clear lỗi khi đóng modal
+        setEditingMovie(null);
     };
 
-    // Xử lý xóa phim
+
     const handleDeleteClick = async (id) => {
-        if (!window.confirm(`Are you sure you want to delete movie ID: ${id}? This action cannot be undone.`)) {
+        if (!window.confirm(`Bạn có chắc muốn xóa phim này không`)) {
             return;
         }
         setLoading(true);
-        setError(null);
         try {
             await axios.delete(`${BASE_API_URL}/movies/${id}`);
-            // alert('Movie deleted successfully!'); // Hoặc dùng toast notification
-            fetchMovies(); // Tải lại danh sách sau khi xóa
+
+            fetchMovies();
         } catch (err) {
-            console.error(`Error deleting movie ${id}:`, err);
-            setError(`Failed to delete movie. ${err.response?.data?.message || err.message}`);
-            // alert(`Error: ${error}`);
+            console.log("lỗi xóa phim.")
         } finally {
             setLoading(false);
         }
     };
 
-    // Xử lý submit form (Thêm mới hoặc Cập nhật)
+
+    const handlePracticeClick = (movieId) => {
+        router.push(`/Navigate/user/practicepage/${movieId}`);
+    };
+
+
     const handleSubmit = async (event) => {
-        event.preventDefault(); // Ngăn submit mặc định
-        setLoading(true);
-        setError(null);
+        event.preventDefault();
 
         const movieDataPayload = {
             ...currentMovieData,
-            // Đảm bảo release_year là số nếu nó có giá trị
             release_year: currentMovieData.release_year ? parseInt(currentMovieData.release_year, 10) : null,
+            difficulty: parseInt(currentMovieData.difficulty, 10)
         };
 
-        // Validate year (simple example)
         if (movieDataPayload.release_year && isNaN(movieDataPayload.release_year)) {
-            setError("Release Year must be a valid number.");
             setLoading(false);
             return;
         }
 
         try {
             if (editingMovie) {
-                // --- Chế độ Update ---
                 await axios.put(`${BASE_API_URL}/movies/${editingMovie.id}`, movieDataPayload);
-                // alert('Movie updated successfully!');
             } else {
-                // --- Chế độ Create ---
                 await axios.post(`${BASE_API_URL}/movies`, movieDataPayload);
-                // alert('Movie added successfully!');
             }
-            closeModal(); // Đóng modal sau khi thành công
-            fetchMovies(); // Tải lại danh sách phim
+            closeModal();
+            fetchMovies();
         } catch (err) {
-            console.error(`Error ${editingMovie ? 'updating' : 'adding'} movie:`, err);
-            // Cố gắng hiển thị lỗi cụ thể từ backend nếu có
-            const backendError = err.response?.data?.details || err.response?.data?.error || err.response?.data?.message || err.message;
-            setError(`Failed to ${editingMovie ? 'update' : 'add'} movie: ${backendError}`);
-            // alert(`Error: ${error}`);
         } finally {
             setLoading(false);
         }
     };
 
-    // --- Phần Render JSX ---
+
     return (
         <div className="p-6 bg-gray-100 min-h-screen font-sans">
-            {/* Header */}
+
             <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
                 <h1 className="text-3xl font-bold text-gray-800">Movie Management</h1>
                 <button
                     onClick={handleAddClick}
-                    className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow hover:bg-indigo-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                    className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg shadow "
                     disabled={loading}
                 >
                     <FiPlus className="mr-2" />
@@ -181,39 +155,35 @@ const MMovie = () => {
                 </button>
             </div>
 
-            {/* Hiển thị lỗi chung */}
-            {error && !showModal && ( // Chỉ hiển thị lỗi chung khi modal đóng
-                <div className="mb-4 p-3 bg-red-100 text-red-700 border border-red-300 rounded-md">
-                    <strong>Error:</strong> {error}
-                </div>
-            )}
 
-            {/* Bảng Danh sách Phim */}
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
+
+
+            <div className="bg-white rounded-lg  overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table className="min-w-full divide-y divide-200">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thumbnail</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">Description</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Year</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th className="px-6 py-3 text-left text-black text-xs uppercase ">ID</th>
+                                <th className="px-6 py-3 text-left text-black text-xs  uppercase ">Thumbnail</th>
+                                <th className="px-6 py- 3 text-left text-black text-xs  uppercase ">Title</th>
+                                <th className="px-6 py-3 text-left  text-black text-xs uppercase  ">Description</th>
+                                <th className="px-6 py-3 text-left text-black text-xs  uppercase">Year</th>
+                                <th className="px-6 py-3 text-left text-black text-xs  uppercase">Genre</th>
+                                <th className="px-6 py-3 text-left text-black text-xs  uppercase">Difficulty</th>
+                                <th className="px-6 py-3 text-xs   text-black   text-left  uppercase ">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-white divide-y">
                             {loading && (
                                 <tr>
-                                    <td colSpan="6" className="text-center py-10 text-gray-500">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto"></div>
+                                    <td colSpan="8" className="text-center py-10 text-gray-500">
                                         Loading movies...
                                     </td>
                                 </tr>
                             )}
                             {!loading && movies.length === 0 && (
                                 <tr>
-                                    <td colSpan="6" className="text-center py-10 text-gray-500">No movies found.</td>
+                                    <td colSpan="8" className="text-center py-10 text-gray-500">No movies found.</td>
                                 </tr>
                             )}
                             {!loading && movies.map((movie) => (
@@ -231,7 +201,24 @@ const MMovie = () => {
                                         {movie.description}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{movie.release_year}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{movie.genre}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${movie.difficulty === 1 ? 'bg-green-100 text-green-800' :
+                                            movie.difficulty === 2 ? 'bg-yellow-100 text-yellow-800' :
+                                                'bg-red-100 text-red-800'
+                                            }`}>
+                                            Level {movie.difficulty}
+                                        </span>
+                                    </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-3">
+                                        <button
+                                            onClick={() => handlePracticeClick(movie.id)}
+                                            className="text-green-600 hover:text-green-800 transition-colors -150"
+                                            title="Practice Quiz"
+                                            disabled={loading}
+                                        >
+                                            <FiBook className="w-5 h-5" />
+                                        </button>
                                         <button
                                             onClick={() => handleEditClick(movie)}
                                             className="text-indigo-600 hover:text-indigo-800 transition-colors duration-150"
@@ -248,8 +235,6 @@ const MMovie = () => {
                                         >
                                             <FiTrash2 className="w-5 h-5" />
                                         </button>
-                                        {/* Optional: View Button */}
-                                        {/* <button className="text-blue-600 hover:text-blue-800" title="View Details"><FiEye className="w-5 h-5" /></button> */}
                                     </td>
                                 </tr>
                             ))}
@@ -262,22 +247,17 @@ const MMovie = () => {
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity duration-300">
                     {/* Modal content */}
-                    <div className="relative bg-white rounded-lg shadow-xl w-full max-w-lg mx-auto p-6 m-4 transform transition-all duration-300 scale-100 max-h-[90vh] overflow-y-auto">
-                        <h3 className="text-xl font-semibold leading-6 text-gray-900 mb-6 border-b pb-3">
+                    <div className="relative bg-white rounded-lg shadow-xl w-2/3 mx-auto p-6 m-4 duration-300 scale-100 max-h-[90vh] overflow-y-auto">
+                        <h3 className="text-xl font-semibold leading-6 text-black mb-6 border-b pb-3">
                             {editingMovie ? 'Edit Movie' : 'Add New Movie'}
                         </h3>
 
-                        {/* Hiển thị lỗi trong modal */}
-                        {error && (
-                            <div className="mb-4 p-3 bg-red-100 text-red-700 border border-red-300 rounded-md text-sm">
-                                <strong>Error:</strong> {error}
-                            </div>
-                        )}
+
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             {/* Title */}
                             <div>
-                                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="title" className="block text-sm font-medium text-black mb-1">
                                     Title <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -286,7 +266,7 @@ const MMovie = () => {
                                     name="title"
                                     value={currentMovieData.title}
                                     onChange={handleInputChange}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 text-black "
                                     required
                                     disabled={loading}
                                 />
@@ -294,7 +274,7 @@ const MMovie = () => {
 
                             {/* Description */}
                             <div>
-                                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="description" className="block text-sm font-medium text-black mb-1">
                                     Description
                                 </label>
                                 <textarea
@@ -303,14 +283,14 @@ const MMovie = () => {
                                     rows="3"
                                     value={currentMovieData.description}
                                     onChange={handleInputChange}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    className="mt-1 block w-full rounded-md border border-gray-300  py-2 px-3 text-black "
                                     disabled={loading}
                                 ></textarea>
                             </div>
 
                             {/* Thumbnail URL */}
                             <div>
-                                <label htmlFor="thumbnail_url" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="thumbnail_url" className="block text-sm font-medium text-black mb-1">
                                     Thumbnail URL
                                 </label>
                                 <input
@@ -319,7 +299,7 @@ const MMovie = () => {
                                     name="thumbnail_url"
                                     value={currentMovieData.thumbnail_url}
                                     onChange={handleInputChange}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    className="mt-1 block w-full rounded-md border border-gray-300  py-2 px-3 text-black "
                                     placeholder="https://example.com/image.jpg"
                                     disabled={loading}
                                 />
@@ -327,7 +307,7 @@ const MMovie = () => {
 
                             {/* Video URL */}
                             <div>
-                                <label htmlFor="video_url" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="video_url" className="block text-sm font-medium text-black mb-1">
                                     Video URL <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -336,7 +316,7 @@ const MMovie = () => {
                                     name="video_url"
                                     value={currentMovieData.video_url}
                                     onChange={handleInputChange}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 text-black "
                                     placeholder="https://example.com/video.mp4"
                                     required
                                     disabled={loading}
@@ -345,7 +325,7 @@ const MMovie = () => {
 
                             {/* Release Year */}
                             <div>
-                                <label htmlFor="release_year" className="block text-sm font-medium text-gray-700 mb-1">
+                                <label htmlFor="release_year" className="block text-sm font-medium text-black mb-1">
                                     Release Year
                                 </label>
                                 <input
@@ -354,12 +334,63 @@ const MMovie = () => {
                                     name="release_year"
                                     value={currentMovieData.release_year}
                                     onChange={handleInputChange}
-                                    className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 text-black "
                                     placeholder="e.g., 2023"
-                                    min="1800" // Optional: Add min/max
-                                    max={new Date().getFullYear() + 1} // Optional: Current year + 1
+                                    min="1800"
+                                    max={new Date().getFullYear() + 1}
                                     disabled={loading}
                                 />
+                            </div>
+
+                            {/* Genre */}
+                            <div>
+                                <label htmlFor="genre" className="block text-sm font-medium text-black mb-1">
+                                    Genre
+                                </label>
+                                <select
+                                    id="genre"
+                                    name="genre"
+                                    value={currentMovieData.genre}
+                                    onChange={handleInputChange}
+                                    className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 text-black "
+                                    disabled={loading}
+                                >
+                                    <option value="">Select a genre</option>
+                                    <option value="Action">Action</option>
+                                    <option value="Adventure">Adventure</option>
+                                    <option value="Animation">Animation</option>
+                                    <option value="Comedy">Comedy</option>
+                                    <option value="Crime">Crime</option>
+                                    <option value="Documentary">Documentary</option>
+                                    <option value="Drama">Drama</option>
+                                    <option value="Family">Family</option>
+                                    <option value="Fantasy">Fantasy</option>
+                                    <option value="Horror">Horror</option>
+                                    <option value="Mystery">Mystery</option>
+                                    <option value="Romance">Romance</option>
+                                    <option value="Sci-Fi">Sci-Fi</option>
+                                    <option value="Thriller">Thriller</option>
+                                    <option value="War">War</option>
+                                </select>
+                            </div>
+
+                            {/* Difficulty */}
+                            <div>
+                                <label htmlFor="difficulty" className="block text-sm font-medium text-black mb-1">
+                                    Difficulty Level
+                                </label>
+                                <select
+                                    id="difficulty"
+                                    name="difficulty"
+                                    value={currentMovieData.difficulty}
+                                    onChange={handleInputChange}
+                                    className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 text-black "
+                                    disabled={loading}
+                                >
+                                    <option value="1">Level 1 - Easy</option>
+                                    <option value="2">Level 2 - Medium</option>
+                                    <option value="3">Level 3 - Hard</option>
+                                </select>
                             </div>
 
                             {/* Action Buttons */}
@@ -367,18 +398,18 @@ const MMovie = () => {
                                 <button
                                     type="button"
                                     onClick={closeModal}
-                                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md border border-gray-300 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-1"
+                                    className="px-4 py-2 text-sm font-medium text-black bg-gray-100 "
                                     disabled={loading}
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     type="submit"
-                                    className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 ${loading ? 'bg-indigo-300 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 focus:ring-indigo-500'}`}
+                                    className={`px-4 py-2 text-sm bg-green-300 text-black rounded-md '}`}
                                     disabled={loading}
                                 >
                                     {loading ? (
-                                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white inline-block mr-2"></div>
+                                        <div className="h-4 w-4 border-t-2 border-b-2 border-white inline-block mr-2"></div>
                                     ) : null}
                                     {loading ? 'Saving...' : (editingMovie ? 'Update Movie' : 'Add Movie')}
                                 </button>
