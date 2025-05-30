@@ -18,7 +18,11 @@ const VideoDemo = () => {
     const [movieUrl, setMovieUrl] = useState('');
     const [englishSubtitles, setEnglishSubtitles] = useState([]);
     const [vietnameseSubtitles, setVietnameseSubtitles] = useState([]);
+    const [movieDetails, setMovieDetails] = useState(null);
+    const [relatedMovies, setRelatedMovies] = useState([]);
     const activeSubtitleRef = useRef(null);
+    const videoContainerRef = useRef(null);
+    const [videoHeight, setVideoHeight] = useState(0);
 
     useEffect(() => {
         console.log("movieid", params.movieId);
@@ -28,12 +32,41 @@ const VideoDemo = () => {
         }
     }, [params]);
 
+    useEffect(() => {
+        if (videoContainerRef.current) {
+            setVideoHeight(videoContainerRef.current.clientHeight);
+        }
+    }, [movieDetails]);
+
     const fetchMovieDetails = async () => {
         try {
             const response = await axios.get(`${BASE_API_URL}/movies/${params.movieId}`);
             setMovieUrl(response.data.video_url);
+            setMovieDetails(response.data);
+            if (response.data?.difficulty) {
+                fetchRelatedMovies(response.data.difficulty, response.data.id);
+            }
         } catch (error) {
             console.error("Error fetching movie details:", error);
+            setMovieDetails(null);
+        }
+    };
+
+    const fetchRelatedMovies = async (currentMovieDifficulty, currentMovieId) => {
+        try {
+            const response = await axios.get(`${BASE_API_URL}/movies`);
+
+            if (response.data) {
+                const filteredRelated = response.data.filter(movie =>
+                    movie.difficulty === currentMovieDifficulty && movie.id !== currentMovieId
+                );
+                setRelatedMovies(filteredRelated);
+            } else {
+                setRelatedMovies([]);
+            }
+        } catch (error) {
+            console.error("Error fetching related movies:", error);
+            setRelatedMovies([]);
         }
     };
 
@@ -117,24 +150,25 @@ const VideoDemo = () => {
     const getCurrentSubtitle = () => {
         let displayText = '';
 
-        // Ưu tiên tìm phụ đề tiếng Việt trước
-        if (isVietSub) {
-            const currentVieSub = findMatchingSubtitle(vietnameseSubtitles, currentTime);
-            if (currentVieSub) {
-                displayText += currentVieSub.text;
+        // Display English subtitles first
+        if (isEngSub) {
+            const currentEngSub = findMatchingSubtitle(englishSubtitles, currentTime);
+            if (currentEngSub) {
+                displayText = currentEngSub.text;
             }
         }
 
-        // Nếu có phụ đề tiếng Anh và đang bật hiển thị
-        if (isEngSub) {
-            const currentEngSub = findMatchingSubtitle(englishSubtitles, currentTime);
-            console.log("EnglishSub:", currentEngSub);
-            if (currentEngSub) {
-                displayText += "\n";
-                displayText += currentEngSub.text;
+        // Then display Vietnamese subtitles on the next line
+        if (isVietSub) {
+            const currentVieSub = findMatchingSubtitle(vietnameseSubtitles, currentTime);
+            if (currentVieSub) {
+                if (displayText) {
+                    displayText += '\n' + currentVieSub.text;
+                } else {
+                    displayText = currentVieSub.text;
+                }
             }
         }
-        console.log("displayText", displayText);
 
         return displayText;
     };
@@ -164,17 +198,25 @@ const VideoDemo = () => {
     }, [currentTime]);
 
     return (<div>
-
         <Taskbar />
-        <div className="mx-auto p-5 bg-[#18191a] min-h-[100vh]">
-            <div className="grid grid-cols-8 gap-5">
-                {/* Video section - 3/5 columns */}
-                <div className="col-span-5 flex flex-col gap-4 ">
-                    <div className="aspect-video rounded-lg overflow-hidden shadow-lg relative">
+        {/* Main content area */}
+        <div className="w-full px-6 py-6 bg-gray-900 text-gray-200 min-h-screen">
+            {/* Grid layout for main sections */}
+            <div className="grid grid-cols-1 md:grid-cols-8 gap-6">
+
+                {/* Left Column: Video, Controls, Movie Details */}
+                <div className="md:col-span-5 flex flex-col gap-6">
+                    {/* Movie Title */}
+                    {movieDetails?.title && (
+                        <h2 className="text-gray-100 text-3xl font-bold mb-4">{movieDetails.title}</h2>
+                    )}
+
+                    {/* Video Container */}
+                    <div className="w-full aspect-video rounded-lg overflow-hidden shadow-xl relative" ref={videoContainerRef}>
                         <Suspense fallback={<div>Loading...</div>}>
                             {movieUrl && (
                                 <ReactPlayer
-                                    //  url={movieUrl}
+                                    url={movieUrl}
                                     controls={true}
                                     width="100%"
                                     height="100%"
@@ -185,81 +227,130 @@ const VideoDemo = () => {
 
                         {/* Overlay subtitle */}
                         {getCurrentSubtitle() && (
-                            <div className="absolute bottom-0 left-0 mb-[6vh] w-full bg-black/20 p-4 text-white text-lg text-center z-10 ">
-                                {getCurrentSubtitle()}
+                            <div className="absolute bottom-0 left-0 mb-[6vh] w-full bg-black bg-opacity-50 p-4 text-white text-xl text-center z-10">
+                                {isEngSub && findMatchingSubtitle(englishSubtitles, currentTime) && (
+                                    <div className="mb-2">
+                                        {findMatchingSubtitle(englishSubtitles, currentTime).text}
+                                    </div>
+                                )}
+                                {isVietSub && findMatchingSubtitle(vietnameseSubtitles, currentTime) && (
+                                    <div>
+                                        {findMatchingSubtitle(vietnameseSubtitles, currentTime).text}
+                                    </div>
+                                )}
                             </div>
                         )}
                     </div>
 
                     {/* Controls */}
-                    <div className="flex flex-col gap-3">
-                        {/* Language buttons */}
-                        <div className="flex gap-3 justify-center">
-                            <button
-                                onClick={toggleBothSubs}
-                                className="bg-green-500 text-white px-4 py-2 rounded border-none cursor-pointer "
-                            >
-                                Xem song ngữ
-                            </button>
-                            <button
-                                onClick={toggleEnglishOnly}
-                                className="bg-green-500 text-white px-4 py-2 rounded border-none cursor-pointer "
-                            >
-                                Chỉ tiếng Anh
-                            </button>
-                            <button
-                                onClick={toggleVietnameseOnly}
-                                className="bg-green-500 text-white px-4 py-2 rounded border-none cursor-pointer"
-                            >
-                                Chỉ tiếng Việt
-                            </button>
-                            <button
-                                onClick={() => router.push(`/Navigate/user/practicepage/${params.movieId}`)}
-                                className="bg-blue-500 text-white px-4 py-2 rounded border-none cursor-pointer "
-                            >
-                                Luyện tập
-                            </button>
+                    <div className="flex flex-wrap gap-4 justify-center">
+                        <button
+                            onClick={toggleBothSubs}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition duration-300 ease-in-out"
+                        >
+                            Xem song ngữ
+                        </button>
+                        <button
+                            onClick={toggleEnglishOnly}
+                            className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition duration-300 ease-in-out"
+                        >
+                            Chỉ tiếng Anh
+                        </button>
+                        <button
+                            onClick={toggleVietnameseOnly}
+                            className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-md transition duration-300 ease-in-out"
+                        >
+                            Chỉ tiếng Việt
+                        </button>
+                        <button
+                            onClick={() => router.push(`/Navigate/user/practicepage/${params.movieId}`)}
+                            className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-md transition duration-300 ease-in-out"
+                        >
+                            Luyện tập
+                        </button>
+                    </div>
+
+                    {/* Movie Details */}
+                    {movieDetails && (
+                        <div className="flex flex-col md:flex-row gap-6 mt-4 p-5 bg-gray-800 rounded-lg shadow-md">
+                            <div className="flex-shrink-0 flex justify-center">
+                                {movieDetails.thumbnail_url && (
+                                    <img src={movieDetails.thumbnail_url} alt={movieDetails.title || 'Movie Poster'} className="w-40 h-60 object-cover rounded shadow-lg" />
+                                )}
+                            </div>
+                            <div className="flex-1 text-gray-300">
+                                <h4 className="text-gray-100 text-2xl font-semibold mb-3">Thông tin phim</h4>
+                                <p className="text-base mb-2"><strong>Độ khó:</strong> {movieDetails.difficulty}</p>
+                                <p className="text-base mb-2"><strong>Thể loại:</strong> {movieDetails.genre}</p>
+                                <p className="text-base whitespace-pre-line leading-relaxed"><strong>Mô tả:</strong> {movieDetails.description}</p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {/* Right Column: Subtitle List, Related Movies */}
+                <div className="md:col-span-3 flex flex-col gap-6">
+                    {/* Subtitle list */}
+                    <div className="bg-gray-800 rounded-lg shadow-md flex flex-col p-5 overflow-hidden" style={{ height: videoHeight > 0 ? videoHeight : 'auto' }}>
+                        <h3 className="text-gray-100 text-xl font-semibold mb-4">Danh sách phụ đề</h3>
+                        <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                            {englishSubtitles.map((engSub, index) => {
+                                const isActive = findMatchingSubtitle([engSub], currentTime) !== undefined;
+                                const vieSub = findMatchingSubtitle(vietnameseSubtitles, engSub.startTime);
+                                return (
+                                    <div
+                                        key={index}
+                                        ref={isActive ? activeSubtitleRef : null}
+                                        className={`p-3 border-b border-gray-700 transition-all duration-300 ${isActive
+                                            ? 'bg-green-700 text-white rounded-md'
+                                            : 'text-gray-300 hover:bg-gray-700'
+                                            }`}
+                                    >
+                                        <div className="text-xs opacity-70 mb-1">
+                                            {formatTime(engSub.startTime)}
+                                        </div>
+                                        {isEngSub && (
+                                            <div className="text-sm whitespace-pre-line">
+                                                {engSub.text}
+                                            </div>
+                                        )}
+                                        {isVietSub && vieSub && (
+                                            <div className="text-sm whitespace-pre-line">
+                                                {vieSub.text}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
 
-                    {/* Current subtitle display */}
-
-                </div>
-
-                {/* Subtitle list - 2/5 columns */}
-                <div className="col-span-3 bg-gray-800 rounded-lg flex flex-col p-4 aspect-[32/27]">
-                    <h3 className="text-gray-200 m-0 mb-4">Danh sách phụ đề</h3>
-                    <div className="flex-1 overflow-y-auto pr-2.5 scrollbar">
-                        {vietnameseSubtitles.map((sub, index) => {
-                            const isActive = findMatchingSubtitle([sub], currentTime) !== undefined;
-
-                            const engSub = findMatchingSubtitle(englishSubtitles, sub.startTime);
-                            return (
-                                <div
-                                    key={index}
-                                    ref={isActive ? activeSubtitleRef : null}
-                                    className={`p-2.5 border-b border-gray-700 transition-all duration-300 ${isActive
-                                        ? 'bg-green-500 text-white rounded'
-                                        : 'text-gray-300'
-                                        }`}
-                                >
-                                    <div className="text-xs opacity-80 mb-1">
-                                        {formatTime(sub.startTime)}
-                                    </div>
-                                    {isVietSub && (
-                                        <div className="text-sm whitespace-pre-line">
-                                            {sub.text}
+                    {/* Related Movies List */}
+                    {relatedMovies.length > 0 && (
+                        <div className="bg-gray-800 rounded-lg shadow-md p-5 flex flex-col">
+                            <h4 className="text-gray-100 text-xl font-semibold mb-4">Phim cùng độ khó</h4>
+                            {/* Scrollable list */}
+                            <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800" style={{ maxHeight: '500px' }}> {/* Adjust max-height as needed */}
+                                <div className="flex flex-col gap-4">
+                                    {relatedMovies.map(relatedMovie => (
+                                        <div
+                                            key={relatedMovie.id}
+                                            className="flex items-center gap-4 cursor-pointer p-3 hover:bg-gray-700 rounded-md transition duration-300 ease-in-out"
+                                            onClick={() => router.push(`/Navigate/user/watchmovie/${relatedMovie.id}`)}
+                                        >
+                                            {relatedMovie.thumbnail_url && (
+                                                <img src={relatedMovie.thumbnail_url} alt={relatedMovie.title || 'Movie Poster'} className="w-20 h-30 object-cover rounded" />
+                                            )}
+                                            <div className="flex-1 text-gray-300">
+                                                <p className="text-base font-medium">{relatedMovie.title}</p>
+                                                <p className="text-sm opacity-80">Độ khó: {relatedMovie.difficulty}</p>
+                                            </div>
                                         </div>
-                                    )}
-                                    {isEngSub && engSub && (
-                                        <div className="text-sm whitespace-pre-line">
-                                            {engSub.text}
-                                        </div>
-                                    )}
+                                    ))}
                                 </div>
-                            );
-                        })}
-                    </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
             </div>
