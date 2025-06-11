@@ -37,6 +37,11 @@ const TaskBar = () => {
                     <p className="font-bold text-white">Yêu thích</p>
                 </Link>
             </div>
+            <div className="mx-[1vw]">
+                <Link href="/Navigate/account">
+                    <p className="font-bold text-white">Cá nhân</p>
+                </Link>
+            </div>
         </div >
     )
 }

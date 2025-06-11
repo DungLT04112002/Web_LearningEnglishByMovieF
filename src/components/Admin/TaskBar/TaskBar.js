@@ -24,7 +24,11 @@ const TaskBar = () => {
             {/* Nút Home */}
             <div className="text-white flex">
 
-
+                <div className="mx-[1vw]">
+                    <Link href="/Navigate/manager/user">
+                        <p className="font-bold ">Quản lí user</p>
+                    </Link>
+                </div>
                 <div className="mx-[1vw]">
                     <Link href="/Navigate/manager/movie">
                         <p className="font-bold  ">Quản lí phim</p>

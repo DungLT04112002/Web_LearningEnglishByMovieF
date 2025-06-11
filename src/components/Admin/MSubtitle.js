@@ -1,9 +1,7 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { FiEdit, FiTrash2, FiPlus } from 'react-icons/fi';
-import axios from 'axios';
-
-const BASE_API_URL = 'http://localhost:8081/api';
+import axiosInstance from '../../utils/axios';
 
 const MSubtitle = () => {
     const [subtitles, setSubtitles] = useState([]);
@@ -25,7 +23,7 @@ const MSubtitle = () => {
     // Lấy danh sách phim
     const fetchMovies = async () => {
         try {
-            const response = await axios.get(`${BASE_API_URL}/movies`);
+            const response = await axiosInstance.get('/movies');
             setMovies(response.data);
         } catch (error) {
             console.error("Error fetching movies:", error);
@@ -37,7 +35,7 @@ const MSubtitle = () => {
     const fetchSubtitles = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`${BASE_API_URL}/subtitles`);
+            const response = await axiosInstance.get('/subtitles');
             setSubtitles(response.data);
             console.log(response.data);
         } catch (error) {
@@ -54,7 +52,7 @@ const MSubtitle = () => {
             return;
         }
         try {
-            await axios.delete(`${BASE_API_URL}/subtitles/${id}`);
+            await axiosInstance.delete(`/subtitles/${id}`);
             fetchSubtitles(); // Refresh danh sách sau khi xóa
         } catch (error) {
             console.error("Error deleting subtitle:", error);
@@ -100,7 +98,6 @@ const MSubtitle = () => {
         try {
             console.log("--- FormData Content ---");
             for (let [key, value] of formData.entries()) {
-                // Nếu value là File, chỉ log tên file
                 if (value instanceof File) {
                     console.log(`${key}: File - ${value.name}`);
                 } else {
@@ -109,15 +106,14 @@ const MSubtitle = () => {
             }
             console.log("-----------------------");
             if (editingSubtitle) {
-                await axios.put(`${BASE_API_URL}/subtitles/${editingSubtitle.id}`, formData, {
+                await axiosInstance.put(`/subtitles/${editingSubtitle.id}`, formData, {
                     headers: {
                         'Content-Type': 'multipart/form-data',
                     }
                 });
             } else {
                 console.log("Post");
-                await axios.post(`${BASE_API_URL}/subtitles`, formData);
-
+                await axiosInstance.post('/subtitles', formData);
             }
             setShowModal(false);
             fetchSubtitles();

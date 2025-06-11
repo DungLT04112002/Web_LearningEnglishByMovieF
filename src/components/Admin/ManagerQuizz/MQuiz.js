@@ -1,9 +1,7 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../utils/axios';
 import { FiEdit, FiTrash2 } from 'react-icons/fi';  // Thêm icon
-
-const BASE_API_URL = 'http://localhost:8081/api';
 
 const MovieQuiz = ({ movieId }) => {
     const [quizzes, setQuizzes] = useState([]);
@@ -42,17 +40,17 @@ const MovieQuiz = ({ movieId }) => {
 
     const fetchMovieQuizzes = async () => {
         try {
-            const quizzesResponse = await axios.get(`${BASE_API_URL}/quizzes/movie/${movieId}`);
+            const quizzesResponse = await axiosInstance.get(`/quizzes/movie/${movieId}`);
             const quizzesData = quizzesResponse.data;
 
             const quizzesWithQuestions = await Promise.all(
                 quizzesData.map(async (quiz) => {
-                    const questionsResponse = await axios.get(`${BASE_API_URL}/questions/quiz/${quiz.id}`);
+                    const questionsResponse = await axiosInstance.get(`/questions/quiz/${quiz.id}`);
                     const questions = questionsResponse.data;
 
                     const questionsWithOptions = await Promise.all(
                         questions.map(async (question) => {
-                            const optionsResponse = await axios.get(`${BASE_API_URL}/options/question/${question.id}`);
+                            const optionsResponse = await axiosInstance.get(`/options/question/${question.id}`);
                             return {
                                 ...question,
                                 options: optionsResponse.data
@@ -71,7 +69,6 @@ const MovieQuiz = ({ movieId }) => {
             setLoading(false);
         } catch (err) {
             setError('Error fetching quiz data');
-
             console.error('Error:', err);
             setLoading(false);
         }
@@ -90,7 +87,6 @@ const MovieQuiz = ({ movieId }) => {
 
     const handleUpdateQuiz = async () => {
         try {
-            console.log("Updating quiz with data:", quizForm); // Debug log
             if (!quizForm.quiz_type || !['reading', 'dialogue_reordering', 'translation', 'equivalent'].includes(quizForm.quiz_type)) {
                 setError('Invalid quiz type');
                 return;
@@ -102,8 +98,7 @@ const MovieQuiz = ({ movieId }) => {
                 quiz_type: quizForm.quiz_type
             };
 
-            console.log("Sending update request with data:", updateData); // Debug log
-            await axios.put(`${BASE_API_URL}/quizzes/${selectedQuiz.id}`, updateData);
+            await axiosInstance.put(`/quizzes/${selectedQuiz.id}`, updateData);
             setShowQuizModal(false);
             fetchMovieQuizzes();
         } catch (err) {
@@ -115,7 +110,7 @@ const MovieQuiz = ({ movieId }) => {
     const handleDeleteQuiz = async (quizId) => {
         if (window.confirm('Are you sure you want to delete this quiz?')) {
             try {
-                await axios.delete(`${BASE_API_URL}/quizzes/${quizId}`);
+                await axiosInstance.delete(`/quizzes/${quizId}`);
                 fetchMovieQuizzes();
             } catch (err) {
                 console.error('Error deleting quiz:', err);
@@ -137,7 +132,7 @@ const MovieQuiz = ({ movieId }) => {
 
     const handleUpdateQuestion = async () => {
         try {
-            await axios.put(`${BASE_API_URL}/questions/${selectedQuestion.id}`, {
+            await axiosInstance.put(`/questions/${selectedQuestion.id}`, {
                 ...questionForm,
                 quiz_id: selectedQuestion.quiz_id
             });
@@ -151,7 +146,7 @@ const MovieQuiz = ({ movieId }) => {
     const handleDeleteQuestion = async (questionId) => {
         if (window.confirm('Bạn có chắc muốn xóa ?')) {
             try {
-                await axios.delete(`${BASE_API_URL}/questions/${questionId}`);
+                await axiosInstance.delete(`/questions/${questionId}`);
                 fetchMovieQuizzes();
             } catch (err) {
                 console.error('Lỗi xoa quiz:', err);
@@ -171,7 +166,7 @@ const MovieQuiz = ({ movieId }) => {
 
     const handleUpdateOption = async () => {
         try {
-            await axios.put(`${BASE_API_URL}/options/${selectedOption.id}`, {
+            await axiosInstance.put(`/options/${selectedOption.id}`, {
                 ...optionForm,
                 question_id: selectedOption.question_id
             });
@@ -185,7 +180,7 @@ const MovieQuiz = ({ movieId }) => {
     const handleDeleteOption = async (optionId) => {
         if (window.confirm('Bạn có chắc muốn xóa không?')) {
             try {
-                await axios.delete(`${BASE_API_URL}/options/${optionId}`);
+                await axiosInstance.delete(`/options/${optionId}`);
                 fetchMovieQuizzes();
             } catch (err) {
                 console.error('lỗi xóa:', err);

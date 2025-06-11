@@ -2,10 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { FiEdit, FiTrash2, FiPlus, FiEye, FiBook } from 'react-icons/fi';
-import axios from 'axios';
+import axiosInstance from '../../utils/axios';
 import { useRouter } from 'next/navigation';
-
-const BASE_API_URL = 'http://localhost:8081/api';
 
 const MMovie = () => {
     const router = useRouter();
@@ -23,11 +21,10 @@ const MMovie = () => {
         difficulty: 1
     });
 
-
     const fetchMovies = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await axios.get(`${BASE_API_URL}/movies`);
+            const response = await axiosInstance.get('/movies');
             setMovies(response.data || []);
         } catch (err) {
             setMovies([]);
@@ -36,11 +33,9 @@ const MMovie = () => {
         }
     }, []);
 
-
     useEffect(() => {
         fetchMovies();
     }, [fetchMovies]);
-
 
     const handleInputChange = (event) => {
         const { name, value } = event.target;
@@ -50,7 +45,6 @@ const MMovie = () => {
         }));
         console.log(event.target.value);
     };
-
 
     const handleAddClick = () => {
         setEditingMovie(null);
@@ -65,7 +59,6 @@ const MMovie = () => {
         });
         setShowModal(true);
     };
-
 
     const handleEditClick = (movie) => {
         setEditingMovie(movie);
@@ -82,12 +75,10 @@ const MMovie = () => {
         setShowModal(true);
     };
 
-
     const closeModal = () => {
         setShowModal(false);
         setEditingMovie(null);
     };
-
 
     const handleDeleteClick = async (id) => {
         if (!window.confirm(`Bạn có chắc muốn xóa phim này không`)) {
@@ -95,8 +86,7 @@ const MMovie = () => {
         }
         setLoading(true);
         try {
-            await axios.delete(`${BASE_API_URL}/movies/${id}`);
-
+            await axiosInstance.delete(`/movies/${id}`);
             fetchMovies();
         } catch (err) {
             console.log("lỗi xóa phim.")
@@ -105,11 +95,9 @@ const MMovie = () => {
         }
     };
 
-
     const handlePracticeClick = (movieId) => {
         router.push(`/Navigate/user/practicepage/${movieId}`);
     };
-
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -127,9 +115,9 @@ const MMovie = () => {
 
         try {
             if (editingMovie) {
-                await axios.put(`${BASE_API_URL}/movies/${editingMovie.id}`, movieDataPayload);
+                await axiosInstance.put(`/movies/${editingMovie.id}`, movieDataPayload);
             } else {
-                await axios.post(`${BASE_API_URL}/movies`, movieDataPayload);
+                await axiosInstance.post('/movies', movieDataPayload);
             }
             closeModal();
             fetchMovies();
@@ -139,10 +127,8 @@ const MMovie = () => {
         }
     };
 
-
     return (
         <div className="p-6 bg-gray-100 min-h-screen font-sans">
-
             <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-300">
                 <h1 className="text-3xl font-bold text-gray-800">Movie Management</h1>
                 <button
@@ -154,9 +140,6 @@ const MMovie = () => {
                     Add New Movie
                 </button>
             </div>
-
-
-
 
             <div className="bg-white rounded-lg  overflow-hidden">
                 <div className="overflow-x-auto">
@@ -243,19 +226,14 @@ const MMovie = () => {
                 </div>
             </div>
 
-            {/* Modal Thêm/Sửa Phim */}
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 transition-opacity duration-300">
-                    {/* Modal content */}
                     <div className="relative bg-white rounded-lg shadow-xl w-2/3 mx-auto p-6 m-4 duration-300 scale-100 max-h-[90vh] overflow-y-auto">
                         <h3 className="text-xl font-semibold leading-6 text-black mb-6 border-b pb-3">
                             {editingMovie ? 'Edit Movie' : 'Add New Movie'}
                         </h3>
 
-
-
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            {/* Title */}
                             <div>
                                 <label htmlFor="title" className="block text-sm font-medium text-black mb-1">
                                     Title <span className="text-red-500">*</span>
@@ -272,7 +250,6 @@ const MMovie = () => {
                                 />
                             </div>
 
-                            {/* Description */}
                             <div>
                                 <label htmlFor="description" className="block text-sm font-medium text-black mb-1">
                                     Description
@@ -288,7 +265,6 @@ const MMovie = () => {
                                 ></textarea>
                             </div>
 
-                            {/* Thumbnail URL */}
                             <div>
                                 <label htmlFor="thumbnail_url" className="block text-sm font-medium text-black mb-1">
                                     Thumbnail URL
@@ -305,7 +281,6 @@ const MMovie = () => {
                                 />
                             </div>
 
-                            {/* Video URL */}
                             <div>
                                 <label htmlFor="video_url" className="block text-sm font-medium text-black mb-1">
                                     Video URL <span className="text-red-500">*</span>
@@ -323,7 +298,6 @@ const MMovie = () => {
                                 />
                             </div>
 
-                            {/* Release Year */}
                             <div>
                                 <label htmlFor="release_year" className="block text-sm font-medium text-black mb-1">
                                     Release Year
@@ -342,7 +316,6 @@ const MMovie = () => {
                                 />
                             </div>
 
-                            {/* Genre */}
                             <div>
                                 <label htmlFor="genre" className="block text-sm font-medium text-black mb-1">
                                     Genre
@@ -374,7 +347,6 @@ const MMovie = () => {
                                 </select>
                             </div>
 
-                            {/* Difficulty */}
                             <div>
                                 <label htmlFor="difficulty" className="block text-sm font-medium text-black mb-1">
                                     Difficulty Level
@@ -393,7 +365,6 @@ const MMovie = () => {
                                 </select>
                             </div>
 
-                            {/* Action Buttons */}
                             <div className="flex justify-end space-x-3 pt-5 border-t mt-6">
                                 <button
                                     type="button"
