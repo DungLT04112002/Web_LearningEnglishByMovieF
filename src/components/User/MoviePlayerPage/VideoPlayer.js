@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect, Suspense } from 'react';
-import Taskbar from './Cus/TaskBar';
+import Taskbar from '../TaskBar/TaskBar';
 import ReactPlayer from 'react-player';
 import axios from 'axios';
 

@@ -40,7 +40,7 @@ const TaskBar = () => {
                     </Link>
                 </div>
                 <div className="mx-[1vw]">
-                    <Link href="/Navigate/manager/practice">
+                    <Link href="/Navigate/manager/manager_quizz">
                         <p className="font-bold ">Quản lí bài tập</p>
                     </Link>
                 </div>

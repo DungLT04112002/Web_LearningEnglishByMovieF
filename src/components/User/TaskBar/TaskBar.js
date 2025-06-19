@@ -1,6 +1,5 @@
 import React from "react";
 import Link from 'next/link'
-import QuizzDemo from "../QuizzDemo";
 const TaskBar = () => {
 
     return (
@@ -38,7 +37,7 @@ const TaskBar = () => {
                 </Link>
             </div>
             <div className="mx-[1vw]">
-                <Link href="/Navigate/account">
+                <Link href="/Navigate/user/useraccount">
                     <p className="font-bold text-white">Cá nhân</p>
                 </Link>
             </div>

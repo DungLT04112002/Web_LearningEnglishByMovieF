@@ -1,6 +1,6 @@
 import React from "react";
-import MMovie from "../MMovie";
-import MSubtitle from "../MSubtitle";
+import MMovie from "../ManagerMovie/ManagerMovie";
+import MSubtitle from "../ManagerSubtitle/ManagerSubtitle";
 import TaskBar from "../TaskBar/TaskBar";
 const HomePageAdmin = () => {
     return (

@@ -1,5 +1,5 @@
 import React from "react";
-import MSubtitle from "@/src/components/Admin/MSubtitle";
+import MSubtitle from "@/src/components/Admin/ManagerSubtitle/ManagerSubtitle";
 import TaskBar from "@/src/components/Admin/TaskBar/TaskBar";
 const page = () => {
     return (

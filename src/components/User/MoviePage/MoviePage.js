@@ -1,6 +1,6 @@
 "use client"
 import React, { useEffect, useState } from 'react';
-import TaskBar from '../TaskBar';
+import TaskBar from '../TaskBar/TaskBar';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 

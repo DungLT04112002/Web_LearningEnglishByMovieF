@@ -1,7 +1,7 @@
 "use client"
 import Link from 'next/link'
 import './globals.css'
-import Taskbar from '../src/components/Cus/TaskBar'; // Đường dẫn tùy vị trí file layout.js
+import Taskbar from '../src/components/User/TaskBar/TaskBar'; // Đường dẫn tùy vị trí file layout.js
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
