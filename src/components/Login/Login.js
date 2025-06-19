@@ -19,8 +19,12 @@ const Login = () => {
             console.log("tok", response.data.accessToken);
             // Lưu token vào localStorage
             localStorage.setItem('accessToken', response.data.accessToken);
-
-            router.push('/'); // Điều hướng tới trang home
+            console.log("role", response.data.user.role);
+            if (response.data.user.role === 'admin') {
+                router.push('/Navigate/manager/movie'); // Điều hướng tới trang home
+            } else {
+                router.push('/'); // Điều hướng tới trang home
+            }
 
             // Chuyển hướng sau khi đăng nhập thành công
         } catch (error) {

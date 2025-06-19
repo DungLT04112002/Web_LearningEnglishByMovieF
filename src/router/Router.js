@@ -109,7 +109,7 @@ router.put('/api/account/avatar', authenticateToken(['user', 'admin']), accountC
 // router.get('/api/admin/users', accountController.getAllUsers);
 // router.post('/api/admin/users', accountController.createUser);
 // router.put('/api/admin/users/:userId/role', accountController.updateUserRole);
-router.get('/api/admin/users', authenticateToken(['admin']), accountController.getAllUsers);
+router.get('/api/admin/users', accountController.getAllUsers);
 router.post('/api/admin/users', authenticateToken(['admin']), accountController.createUser);
 router.put('/api/admin/users/:userId/role', authenticateToken(['admin']), accountController.updateUserRole);
 

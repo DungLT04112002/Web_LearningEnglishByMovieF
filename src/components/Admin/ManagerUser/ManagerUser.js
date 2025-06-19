@@ -1,7 +1,6 @@
 "use client"
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-
+import axiosInstance from '../../../utils/axios';
 const ManagerUser = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -22,11 +21,7 @@ const ManagerUser = () => {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get('http://localhost:8081/api/admin/users', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
+            const response = await axiosInstance.get('http://localhost:8081/api/admin/users')
             setUsers(response.data);
             setLoading(false);
         } catch (err) {
@@ -49,11 +44,7 @@ const ManagerUser = () => {
         setSuccess('');
 
         try {
-            await axios.post('http://localhost:8081/api/admin/users', newUser, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
+            await axiosInstance.post('http://localhost:8081/api/admin/users', newUser);
             setSuccess('User created successfully');
             setShowAddForm(false);
             setNewUser({
@@ -71,14 +62,7 @@ const ManagerUser = () => {
 
     const handleRoleChange = async (userId, newRole) => {
         try {
-            await axios.put(`http://localhost:8081/api/admin/users/${userId}/role`,
-                { role: newRole },
-                {
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    }
-                }
-            );
+            await axiosInstance.put(`http://localhost:8081/api/admin/users/${userId}/role`, { role: newRole });
             setSuccess('User role updated successfully');
             fetchUsers();
         } catch (err) {

@@ -29,32 +29,32 @@ const authenticateToken = (allowedRoles) => {
 };
 
 // Keep the existing functions for backward compatibility
-const verifyToken = (req, res, next) => {
-    const authHeader = req.headers["authorization"];
-    const token = authHeader && authHeader.split(" ")[1];
+// const verifyToken = (req, res, next) => {
+//     const authHeader = req.headers["authorization"];
+//     const token = authHeader && authHeader.split(" ")[1];
 
-    if (!token) return res.status(401).json({ message: "Unauthorized" });
+//     if (!token) return res.status(401).json({ message: "Unauthorized" });
 
-    try {
-        const decoded = jwt.verify(token, process.env.SECRET_KEY);
-        req.user = decoded.user;
-        next();
-    } catch (err) {
-        return res.status(403).json({ message: "Invalid token" });
-    }
-};
+//     try {
+//         const decoded = jwt.verify(token, process.env.SECRET_KEY);
+//         req.user = decoded.user;
+//         next();
+//     } catch (err) {
+//         return res.status(403).json({ message: "Invalid token" });
+//     }
+// };
 
-const requireRole = (role) => {
-    return (req, res, next) => {
-        if (req.user?.role !== role) {
-            return res.status(403).json({ message: "Forbidden: wrong role" });
-        }
-        next();
-    };
-};
+// const requireRole = (role) => {
+//     return (req, res, next) => {
+//         if (req.user?.role !== role) {
+//             return res.status(403).json({ message: "Forbidden: wrong role" });
+//         }
+//         next();
+//     };
+// };
 
 module.exports = {
-    verifyToken,
-    requireRole,
+    // verifyToken,
+    // requireRole,
     authenticateToken
 };

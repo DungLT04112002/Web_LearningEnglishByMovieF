@@ -22,16 +22,36 @@ const ManagerAccount = () => {
 
     const fetchUserInfo = async () => {
         try {
-            console.log("account", localStorage.getItem('accessToken'))
+            const token = localStorage.getItem('accessToken');
+            if (!token) {
+                setError('No authentication token found');
+                setLoading(false);
+                return;
+            }
+
             const response = await axios.get('http://localhost:8081/api/account', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
+                    'Authorization': `Bearer ${token}`
                 }
             });
-            setUserInfo(response.data);
+
+            if (response.data) {
+                setUserInfo({
+                    name: response.data.name || '',
+                    email: response.data.email || '',
+                    birthdate: response.data.birthdate || '',
+                    gender: response.data.gender || '',
+                    avatar_url: response.data.avatar_url || ''
+                });
+            }
             setLoading(false);
         } catch (err) {
-            setError('Failed to fetch user information');
+            console.error('Error fetching user info:', err);
+            if (err.response) {
+                setError(err.response.data.message || 'Failed to fetch user information');
+            } else {
+                setError('Failed to fetch user information');
+            }
             setLoading(false);
         }
     };
