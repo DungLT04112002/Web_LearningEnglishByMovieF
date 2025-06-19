@@ -38,7 +38,7 @@ const upload = multer({
 
 
 // Import Controllers
-const movieController = require('../Controller/VideoController/ViedeoController');
+const movieController = require('../Controller/VideoController/VideoController');
 const subController = require('../Controller/SubComtroller/SubController');
 const quizzController = require('../Controller/QuizzController/QuizzController');
 const questionController = require('../Controller/QuestionController/QuestionController');

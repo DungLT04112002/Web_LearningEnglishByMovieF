@@ -23,7 +23,7 @@ const Login = () => {
             if (response.data.user.role === 'admin') {
                 router.push('/Navigate/manager/movie'); // Điều hướng tới trang home
             } else {
-                router.push('/'); // Điều hướng tới trang home
+                router.push('/Navigate/user/homepage'); // Điều hướng tới trang home
             }
 
             // Chuyển hướng sau khi đăng nhập thành công

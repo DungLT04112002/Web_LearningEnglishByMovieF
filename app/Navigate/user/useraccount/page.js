@@ -1,6 +1,6 @@
 import React from "react";
-import TaskBar from "@/src/components/Cus/TaskBar";
-import ManagerAccount from "@/src/components/Login/ManagerAccount";
+import TaskBar from "@/src/components/User/TaskBar/TaskBar";
+import ManagerAccount from "@/src/components/User/UserAccountPage/ManagerAccount";
 const page = () => {
     return (
         <div>

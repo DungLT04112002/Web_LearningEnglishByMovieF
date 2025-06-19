@@ -1,287 +1,476 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { FiTrash2, FiSave } from 'react-icons/fi';
-import axios from 'axios';
-import createQuiz, { QUIZ_TYPES } from '../../../server/openAI.mjs';
-import MQuiz from './MQuiz';
+import axiosInstance from '../../../utils/axios';
+import { FiEdit, FiTrash2 } from 'react-icons/fi';  // Thêm icon
 
-const BASE_API_URL = 'http://localhost:8081/api';
+const MovieQuiz = ({ movieId }) => {
+    const [quizzes, setQuizzes] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    const [showQuizModal, setShowQuizModal] = useState(false);
+    const [showQuestionModal, setShowQuestionModal] = useState(false);
+    const [showOptionModal, setShowOptionModal] = useState(false);
+    const [selectedQuizType, setSelectedQuizType] = useState('all'); // Thêm state cho loại quiz
 
-const ManagerQuizz = () => {
-    // State cho danh sách phim và phim được chọn
-    const [movies, setMovies] = useState([]);
-    const [selectedMovie, setSelectedMovie] = useState('');
-    const [selectedMovieTitle, setSelectedMovieTitle] = useState('');
-    const [key, setKey] = useState(0);
+    // Form states
+    const [quizForm, setQuizForm] = useState({
+        passage: '',
+        quiz_type: 'reading' // Default value matching database ENUM
+    });
 
-    // State cho phụ đề
-    const [subtitle, setSubtitle] = useState('');
-    const [subtitleLoading, setSubtitleLoading] = useState(false);
+    const [questionForm, setQuestionForm] = useState({
+        question: '',
+        answer: '',
+        explanation: '',
+        quote: ''
+    });
+    const [optionForm, setOptionForm] = useState({
+        label: '',
+        content: ''
+    });
 
-    // State cho quiz
-    const [generatedQuizzes, setGeneratedQuizzes] = useState([]);
-    const [quizLoading, setQuizLoading] = useState(false);
-    const [quizError, setQuizError] = useState(null);
-    const [selectedQuizType, setSelectedQuizType] = useState(QUIZ_TYPES.READING);
+    const [selectedQuiz, setSelectedQuiz] = useState(null);
+    const [selectedQuestion, setSelectedQuestion] = useState(null);
+    const [selectedOption, setSelectedOption] = useState(null);
 
-    // Lấy danh sách phim
     useEffect(() => {
-        fetchMovies();
+        console.log("id", movieId);
+        fetchMovieQuizzes();
     }, []);
 
-    // Add this new useEffect
-    useEffect(() => {
-        if (selectedMovie) {
-            setKey(prevKey => prevKey + 1); // Force MQuiz to remount when selectedMovie changes
-        }
-    }, [selectedMovie]);
-
-    const fetchMovies = async () => {
+    const fetchMovieQuizzes = async () => {
         try {
-            const response = await axios.get(`${BASE_API_URL}/movies`);
-            if (response.data && Array.isArray(response.data)) {
-                setMovies(response.data);
-            } else {
-                setQuizError('Không thể lấy danh sách phim');
-            }
-        } catch (error) {
-            console.error('Error fetching movies:', error);
-            setQuizError('Lỗi khi lấy danh sách phim');
+            const quizzesResponse = await axiosInstance.get(`/quizzes/movie/${movieId}`);
+            const quizzesData = quizzesResponse.data;
+
+            const quizzesWithQuestions = await Promise.all(
+                quizzesData.map(async (quiz) => {
+                    const questionsResponse = await axiosInstance.get(`/questions/quiz/${quiz.id}`);
+                    const questions = questionsResponse.data;
+
+                    const questionsWithOptions = await Promise.all(
+                        questions.map(async (question) => {
+                            const optionsResponse = await axiosInstance.get(`/options/question/${question.id}`);
+                            return {
+                                ...question,
+                                options: optionsResponse.data
+                            };
+                        })
+                    );
+
+                    return {
+                        ...quiz,
+                        questions: questionsWithOptions
+                    };
+                })
+            );
+
+            setQuizzes(quizzesWithQuestions);
+            setLoading(false);
+        } catch (err) {
+            setError('Error fetching quiz data');
+            console.error('Error:', err);
+            setLoading(false);
         }
     };
 
-    // Lấy phụ đề khi chọn phim
-    const handleMovieSelect = async (movieId) => {
-        if (!movieId) {
-            setQuizError('Vui lòng chọn phim');
-            return;
-        }
+    // Quiz handlers
+    const handleEditQuiz = (quiz) => {
+        console.log("Editing quiz:", quiz); // Debug log
+        setSelectedQuiz(quiz);
+        setQuizForm({
+            passage: quiz.passage || '',
+            quiz_type: quiz.quiz_type || 'reading'
+        });
+        setShowQuizModal(true);
+    };
 
-        setSelectedMovie(movieId);
-        console.log("selectedMovie: ", selectedMovie);
-        setSubtitleLoading(true);
+    const handleUpdateQuiz = async () => {
         try {
-            const selectedMovie = movies.find(m => m.id === parseInt(movieId));
-            if (!selectedMovie) {
-                setQuizError('Không tìm thấy thông tin phim');
+            if (!quizForm.quiz_type || !['reading', 'dialogue_reordering', 'translation', 'equivalent'].includes(quizForm.quiz_type)) {
+                setError('Invalid quiz type');
                 return;
             }
 
-            setSelectedMovieTitle(selectedMovie.title);
+            const updateData = {
+                movie_id: selectedQuiz.movie_id,
+                passage: quizForm.passage,
+                quiz_type: quizForm.quiz_type
+            };
 
-            const response = await axios.get(`${BASE_API_URL}/movies/${movieId}/subtitles/en`);
-            const englishSubtitle = response.data;
+            await axiosInstance.put(`/quizzes/${selectedQuiz.id}`, updateData);
+            setShowQuizModal(false);
+            fetchMovieQuizzes();
+        } catch (err) {
+            console.error('Error updating quiz:', err);
+            setError(err.response?.data?.message || 'Error updating quiz');
+        }
+    };
 
-            if (englishSubtitle) {
-                setSubtitle(englishSubtitle.srt_content);
-            } else {
-                setSubtitle('');
-                setQuizError('Không tìm thấy phụ đề tiếng Anh cho phim này');
+    const handleDeleteQuiz = async (quizId) => {
+        if (window.confirm('Are you sure you want to delete this quiz?')) {
+            try {
+                await axiosInstance.delete(`/quizzes/${quizId}`);
+                fetchMovieQuizzes();
+            } catch (err) {
+                console.error('Error deleting quiz:', err);
             }
-        } catch (error) {
-            console.error('Error fetching subtitle:', error);
-            setQuizError('Lỗi khi lấy phụ đề');
-        } finally {
-            setSubtitleLoading(false);
         }
     };
 
-    // Tạo quiz từ phụ đề
-    const handleCreateQuiz = async () => {
-        if (!subtitle) {
-            setQuizError('Không có phụ đề để tạo quiz');
-            return;
-        }
+    // Question handlers
+    const handleEditQuestion = (question) => {
+        setSelectedQuestion(question);
+        setQuestionForm({
+            question: question.question,
+            answer: question.answer,
+            explanation: question.explanation,
+            quote: question.quote || ''
+        });
+        setShowQuestionModal(true);
+    };
 
+    const handleUpdateQuestion = async () => {
         try {
-            setQuizLoading(true);
-            setQuizError(null);
-            const quizData = await createQuiz(subtitle, selectedQuizType);
-            setGeneratedQuizzes(quizData);
-        } catch (error) {
-            console.error('Error creating quiz:', error);
-            setQuizError(`Lỗi tạo quiz: ${error.message}`);
-        } finally {
-            setQuizLoading(false);
-        }
-    };
-
-    // Xóa quiz được tạo
-    const handleDeleteGeneratedQuiz = (index) => {
-        setGeneratedQuizzes(prev => prev.filter((_, i) => i !== index));
-    };
-
-    // Lưu quiz vào database
-    const handleSaveQuiz = async (quiz) => {
-        try {
-            // Lưu quiz
-            const quizResponse = await axios.post(`${BASE_API_URL}/quizzes`, {
-                movie_id: selectedMovie,
-                passage: quiz.passage,
-                quiz_type: selectedQuizType
+            await axiosInstance.put(`/questions/${selectedQuestion.id}`, {
+                ...questionForm,
+                quiz_id: selectedQuestion.quiz_id
             });
-
-            const quizId = quizResponse.data.quizId;
-
-            // Lưu các câu hỏi
-            for (const question of quiz.questions) {
-                const questionResponse = await axios.post(`${BASE_API_URL}/questions`, {
-                    quiz_id: quizId,
-                    question: question.question,
-                    answer: question.answer,
-                    explanation: question.explanation,
-                    quote: question.quote
-                });
-
-                const questionId = questionResponse.data.questionId;
-
-                // Lưu các lựa chọn
-                for (let i = 0; i < question.options.length; i++) {
-                    const option = question.options[i];
-                    await axios.post(`${BASE_API_URL}/options`, {
-                        question_id: questionId,
-                        label: String.fromCharCode(65 + i), // A, B, C, D
-                        content: option.substring(3) // Bỏ "A. ", "B. ", etc.
-                    });
-                }
-            }
-
-            // Xóa quiz đã lưu khỏi danh sách generated
-            setGeneratedQuizzes(prev => prev.filter(q => q !== quiz));
-            setQuizError(null);
-        } catch (error) {
-            console.error('Error saving quiz:', error);
-            setQuizError(`Lỗi lưu quiz: ${error.message}`);
+            setShowQuestionModal(false);
+            fetchMovieQuizzes();
+        } catch (err) {
+            console.error('Lỗi update:', err);
         }
     };
+
+    const handleDeleteQuestion = async (questionId) => {
+        if (window.confirm('Bạn có chắc muốn xóa ?')) {
+            try {
+                await axiosInstance.delete(`/questions/${questionId}`);
+                fetchMovieQuizzes();
+            } catch (err) {
+                console.error('Lỗi xoa quiz:', err);
+            }
+        }
+    };
+
+    // Option handlers
+    const handleEditOption = (option) => {
+        setSelectedOption(option);
+        setOptionForm({
+            label: option.label,
+            content: option.content
+        });
+        setShowOptionModal(true);
+    };
+
+    const handleUpdateOption = async () => {
+        try {
+            await axiosInstance.put(`/options/${selectedOption.id}`, {
+                ...optionForm,
+                question_id: selectedOption.question_id
+            });
+            setShowOptionModal(false);
+            fetchMovieQuizzes();
+        } catch (err) {
+            console.error('Lỗi update:', err);
+        }
+    };
+
+    const handleDeleteOption = async (optionId) => {
+        if (window.confirm('Bạn có chắc muốn xóa không?')) {
+            try {
+                await axiosInstance.delete(`/options/${optionId}`);
+                fetchMovieQuizzes();
+            } catch (err) {
+                console.error('lỗi xóa:', err);
+            }
+        }
+    };
+
+    // Thêm hàm filter quizzes
+    const filteredQuizzes = selectedQuizType === 'all'
+        ? quizzes
+        : quizzes.filter(quiz => quiz.quiz_type === selectedQuizType);
+
+    if (loading) return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+    );
+
+    if (error) return (
+        <div className="flex items-center justify-center min-h-screen">
+            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <strong className="font-bold">Error!</strong>
+                <span className="block sm:inline"> {error}</span>
+            </div>
+        </div>
+    );
 
     return (
-        <div className="p-6 bg-gray-100 min-h-screen">
-            {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-800">Quản lý Quiz</h1>
-            </div>
+        <div className=" mx-auto p-6">
+            <div className="flex justify-between items-center mb-8">
+                <h1 className="text-3xl font-bold text-gray-800">Movie Quizzes</h1>
 
-            {/* Movie Selection */}
-            <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Chọn phim
-                </label>
-                <select
-                    value={selectedMovie}
-                    onChange={(e) => handleMovieSelect(e.target.value)}
-                    className="w-full rounded-md border text-black border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                    <option value="">-- Chọn phim --</option>
-                    {movies.map((movie) => (
-                        <option key={movie.id} value={movie.id}>
-                            {movie.title}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Selected Movie Info */}
-            {selectedMovie && (
-                <div className="mb-6 p-4 bg-white rounded-lg shadow">
-                    <h2 className="text-xl text-black font-bold mb-4">{selectedMovieTitle}</h2>
-
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Chọn loại bài tập
-                        </label>
-                        <select
-                            value={selectedQuizType}
-                            onChange={(e) => setSelectedQuizType(e.target.value)}
-                            className="w-full rounded-md border text-black border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                        >
-                            <option value={QUIZ_TYPES.READING}>Bài đọc hiểu</option>
-                            <option value={QUIZ_TYPES.DIALOGUE_REORDERING}>Sắp xếp hội thoại</option>
-                            <option value={QUIZ_TYPES.TRANSLATION}>Dịch câu</option>
-                            <option value={QUIZ_TYPES.EQUIVALENT}>Chọn câu tương đương</option>
-                        </select>
-                    </div>
-
-                    <button
-                        onClick={handleCreateQuiz}
-                        disabled={quizLoading || subtitleLoading}
-                        className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:bg-gray-400"
+                {/* Filter dropdown */}
+                <div className="flex items-center space-x-4">
+                    <label className="text-sm font-medium text-gray-700">Filter by type:</label>
+                    <select
+                        value={selectedQuizType}
+                        onChange={(e) => setSelectedQuizType(e.target.value)}
+                        className="rounded-md border-gray-300 shadow-sm text-black"
                     >
-                        {quizLoading ? 'Đang tạo quiz...' : 'Tạo quiz từ phụ đề'}
-                    </button>
+                        <option value="all">All Types</option>
+                        <option value="reading">Reading Comprehension</option>
+                        <option value="dialogue_reordering">Dialogue Reordering</option>
+                        <option value="translation">Translation</option>
+                        <option value="equivalent">Equivalent</option>
+                    </select>
+                </div>
+            </div>
+
+            {/* Quiz Modal */}
+            {showQuizModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-2/3">
+                        <h2 className="text-xl font-semibold mb-4 text-black">Edit Quiz</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-black text-sm font-bold mb-2">Quiz Type</label>
+                                <select
+                                    value={quizForm.quiz_type}
+                                    onChange={(e) => {
+                                        console.log("Selected quiz type:", e.target.value); // Debug log
+                                        setQuizForm(prev => ({
+                                            ...prev,
+                                            quiz_type: e.target.value
+                                        }));
+                                    }}
+                                    className="border rounded py-2 px-3 text-black leading-tight w-full"
+                                >
+                                    <option value="reading">Reading Comprehension</option>
+                                    <option value="dialogue_reordering">Dialogue Reordering</option>
+                                    <option value="translation">Translation</option>
+                                    <option value="equivalent">Equivalent</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-black text-sm font-bold mb-2">Passage</label>
+                                <textarea
+                                    value={quizForm.passage}
+                                    onChange={(e) => setQuizForm(prev => ({
+                                        ...prev,
+                                        passage: e.target.value
+                                    }))}
+                                    className="border rounded py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline w-full h-32 resize-none"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex justify-end space-x-2 mt-4">
+                            <button
+                                onClick={() => setShowQuizModal(false)}
+                                className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleUpdateQuiz}
+                                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 
-            {/* Error Display */}
-            {quizError && (
-                <div className="mb-4 p-3 bg-red-100 text-red-700 border border-red-300 rounded-md">
-                    {quizError}
+            {/* Question Modal */}
+            {showQuestionModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-2/3">
+                        <h2 className="text-xl font-semibold mb-4 text-black">Edit Question</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-black text-sm font-bold mb-2">Question</label>
+                                <textarea
+                                    type="text"
+                                    value={questionForm.question}
+                                    onChange={(e) => setQuestionForm({ ...questionForm, question: e.target.value })}
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-black text-sm font-bold mb-2">Answer</label>
+                                <textarea
+                                    type="text"
+                                    value={questionForm.answer}
+                                    onChange={(e) => setQuestionForm({ ...questionForm, answer: e.target.value })}
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-black text-sm font-bold mb-2">Explanation</label>
+                                <textarea
+                                    type="text"
+                                    value={questionForm.explanation}
+                                    onChange={(e) => setQuestionForm({ ...questionForm, explanation: e.target.value })}
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-black text-sm font-bold mb-2">Quote (optional)</label>
+                                <textarea
+                                    type="text"
+                                    value={questionForm.quote}
+                                    onChange={(e) => setQuestionForm({ ...questionForm, quote: e.target.value })}
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex justify-end space-x-2 mt-4">
+                            <button
+                                onClick={() => setShowQuestionModal(false)}
+                                className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleUpdateQuestion}
+                                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
                 </div>
             )}
 
-            {/* Generated Quizzes */}
-            {generatedQuizzes.length > 0 && (
-                <div className="mb-8">
-                    <h2 className="text-2xl font-bold mb-4">Quiz được tạo</h2>
-                    <div className="space-y-6">
-                        {generatedQuizzes.map((quiz, index) => (
-                            <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                                <div className="flex justify-between items-start mb-4">
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-black">Quiz #{index + 1}</h3>
-                                        <p className="text-sm text-gray-500">Loại: {selectedQuizType}</p>
-                                    </div>
-                                    <div className="space-x-2">
-                                        <button
-                                            onClick={() => handleSaveQuiz(quiz)}
-                                            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 flex items-center"
-                                        >
-                                            <FiSave className="w-4 h-4 mr-1" />
-                                            Lưu
-                                        </button>
-                                        <button
-                                            onClick={() => handleDeleteGeneratedQuiz(index)}
-                                            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 flex items-center"
-                                        >
-                                            <FiTrash2 className="w-4 h-4 mr-1" />
-                                            Xóa
-                                        </button>
-                                    </div>
+            {/* Option Modal */}
+            {showOptionModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg p-6 w-2/3">
+                        <h2 className="text-xl font-semibold mb-4 text-black">Edit Option</h2>
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-black text-sm font-bold mb-2">Label</label>
+                                <textarea
+                                    type="text"
+                                    value={optionForm.label}
+                                    onChange={(e) => setOptionForm({ ...optionForm, label: e.target.value })}
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-black text-sm font-bold mb-2">Content</label>
+                                <textarea
+                                    type="text"
+                                    value={optionForm.content}
+                                    onChange={(e) => setOptionForm({ ...optionForm, content: e.target.value })}
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex justify-end space-x-2 mt-4">
+                            <button
+                                onClick={() => setShowOptionModal(false)}
+                                className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleUpdateOption}
+                                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Quiz list */}
+            <div className="space-y-6">
+                {filteredQuizzes.map((quiz) => (
+                    <div key={quiz.id} className="bg-white rounded-lg shadow-lg p-6">
+                        <div className="flex justify-between items-center mb-4">
+                            <div>
+                                <div className="text-lg font-semibold text-black">
+                                    {quiz.quiz_type === 'reading' ? quiz.passage : `Quiz Type: ${quiz.quiz_type}`}
                                 </div>
-
-                                {quiz.passage && (
-                                    <p className="text-gray-700 mb-4">{quiz.passage}</p>
-                                )}
-
-                                <div className="space-y-4">
-                                    {quiz.questions.map((question, qIndex) => (
-                                        <div key={qIndex} className="border-t pt-4">
-                                            <p className="font-medium text-gray-800">{qIndex + 1}. {question.question}</p>
-                                            <ul className="ml-4 mt-2 space-y-1">
-                                                {question.options.map((opt, i) => (
-                                                    <li key={i} className={`pl-2 ${opt.startsWith(question.answer) ? 'text-green-700 font-semibold' : 'text-gray-700'}`}>
-                                                        {opt}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                            <div className="mt-2 text-sm text-gray-600">
-                                                <p><span className="font-medium">Giải thích:</span> {question.explanation}</p>
-                                                {question.quote && <p><span className="font-medium">Trích dẫn:</span> {question.quote}</p>}
-                                            </div>
-                                        </div>
-                                    ))}
+                                <div className="text-sm text-gray-500">
+                                    Type: {quiz.quiz_type || 'reading'}
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+                            <div className="flex items-center space-x-4">
+                                <button
+                                    onClick={() => handleEditQuiz(quiz)}
+                                    className="text-blue-500 hover:text-blue-700"
+                                >
+                                    <FiEdit size={20} />
+                                </button>
+                                <button
+                                    onClick={() => handleDeleteQuiz(quiz.id)}
+                                    className="text-red-500 hover:text-red-700"
+                                >
+                                    <FiTrash2 size={20} />
+                                </button>
+                            </div>
+                        </div>
 
-            {/* Display saved quizzes */}
-            {selectedMovie && <MQuiz key={key} movieId={selectedMovie} />}
+                        {/* Questions list */}
+                        <div className="space-y-4">
+                            {quiz.questions.map((question) => (
+                                <div key={question.id} className="border-b border-gray-300 pb-4">
+                                    <div className="font-semibold text-black">{question.question}</div>
+                                    <div className="text-sm text-black">Answer: {question.answer}</div>
+                                    <div className="text-sm text-black">Explanation: {question.explanation}</div>
+                                    {question.quote && <div className="text-sm text-black">Quote: {question.quote}</div>}
+                                    <div className="flex justify-end space-x-4 mt-2">
+                                        <button
+                                            onClick={() => handleEditQuestion(question)}
+                                            className="text-blue-500 hover:text-blue-700"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => handleDeleteQuestion(question.id)}
+                                            className="text-red-500 hover:text-red-700"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
+
+                                    {/* Options list */}
+                                    <div className="ml-4 mt-2 space-y-2">
+                                        {question.options.map((option) => (
+                                            <div key={option.id} className="flex justify-between items-center">
+                                                <div className="text-sm text-black">{option.label}. {option.content}</div>
+                                                <div className="flex items-center space-x-2">
+                                                    <button
+                                                        onClick={() => handleEditOption(option)}
+                                                        className="text-blue-500 hover:text-blue-700"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteOption(option.id)}
+                                                        className="text-red-500 hover:text-red-700"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };
 
-export default ManagerQuizz;
-
+export default MovieQuiz;

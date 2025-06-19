@@ -1,5 +1,5 @@
 import React from "react";
-import MoviePage from "@/src/components/Cus/MoviePage/MoviePage";
+import MoviePage from "@/src/components/User/MoviePage/MoviePage";
 const page = () => {
     return (
         <MoviePage></MoviePage>

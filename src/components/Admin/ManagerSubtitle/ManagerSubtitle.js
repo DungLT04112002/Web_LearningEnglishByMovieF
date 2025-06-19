@@ -1,7 +1,7 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { FiEdit, FiTrash2, FiPlus } from 'react-icons/fi';
-import axiosInstance from '../../utils/axios';
+import axiosInstance from '../../../utils/axios';
 
 const MSubtitle = () => {
     const [subtitles, setSubtitles] = useState([]);

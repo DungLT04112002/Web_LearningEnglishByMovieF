@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { FiEdit, FiTrash2, FiPlus, FiEye, FiBook } from 'react-icons/fi';
-import axiosInstance from '../../utils/axios';
+import axiosInstance from '../../../utils/axios';
 import { useRouter } from 'next/navigation';
 
 const MMovie = () => {
