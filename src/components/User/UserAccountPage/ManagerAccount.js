@@ -128,126 +128,112 @@ const ManagerAccount = () => {
     }
 
     return (
-        <div className="min-h-screen bg-black py-12 px-4 sm:px-6 lg:px-8">
-            <div className=" mx-auto">
-                <div className="bg-gray-900 shadow-lg rounded-lg p-6 border border-gray-800">
-                    <h2 className="text-2xl font-bold text-white mb-6">Account Settings</h2>
+      <div className="min-h-screen bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+  <div className="w-full max-w-2xl">
+    <div className="bg-slate-900 shadow-lg rounded-xl p-8 border border-slate-800">
+      <h2 className="text-3xl font-bold text-white mb-8 text-center">Account Settings</h2>
 
-                    {error && (
-                        <div className="mb-4 p-4 bg-red-900/50 border border-red-800 rounded-md">
-                            <p className="text-red-400">{error}</p>
-                        </div>
-                    )}
-
-                    {success && (
-                        <div className="mb-4 p-4 bg-green-900/50 border border-green-800 rounded-md">
-                            <p className="text-green-400">{success}</p>
-                        </div>
-                    )}
-
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        {/* Avatar Section */}
-                        <div className="flex items-center space-x-6">
-                            <div className="shrink-0">
-                                <img
-                                    className="h-16 w-16 object-cover rounded-full border-2 border-gray-700"
-                                    src={userInfo.avatar_url}
-                                    alt="Profile"
-                                />
-                            </div>
-                            <label className="block">
-                                <span className="sr-only">Choose profile photo</span>
-                                <input
-                                    type="file"
-                                    accept="image/*"
-                                    onChange={handleAvatarChange}
-                                    className="block w-full text-sm text-gray-400
-                                        file:mr-4 file:py-2 file:px-4
-                                        file:rounded-full file:border-0
-                                        file:text-sm file:font-semibold
-                                        file:bg-gray-800 file:text-gray-300
-                                        hover:file:bg-gray-700"
-                                />
-                            </label>
-                        </div>
-
-                        {/* Name */}
-                        <div>
-                            <label htmlFor="name" className="block text-sm font-medium text-gray-300">
-                                Name
-                            </label>
-                            <input
-                                type="text"
-                                name="name"
-                                id="name"
-                                value={userInfo.name}
-                                onChange={handleInputChange}
-                                className="mt-1 block w-full rounded-md bg-gray-800 border-gray-700 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            />
-                        </div>
-
-                        {/* Email (Read-only) */}
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-300">
-                                Email
-                            </label>
-                            <input
-                                type="email"
-                                name="email"
-                                id="email"
-                                value={userInfo.email}
-                                disabled
-                                className="mt-1 block w-full rounded-md bg-gray-800 border-gray-700 text-gray-400 shadow-sm"
-                            />
-                        </div>
-
-                        {/* Birthdate */}
-                        <div>
-                            <label htmlFor="birthdate" className="block text-sm font-medium text-gray-300">
-                                Birthdate
-                            </label>
-                            <input
-                                type="date"
-                                name="birthdate"
-                                id="birthdate"
-                                value={userInfo.birthdate}
-                                onChange={handleInputChange}
-                                className="mt-1 block w-full rounded-md bg-gray-800 border-gray-700 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            />
-                        </div>
-
-                        {/* Gender */}
-                        <div>
-                            <label htmlFor="gender" className="block text-sm font-medium text-gray-300">
-                                Gender
-                            </label>
-                            <select
-                                name="gender"
-                                id="gender"
-                                value={userInfo.gender}
-                                onChange={handleInputChange}
-                                className="mt-1 block w-full rounded-md bg-gray-800 border-gray-700 text-white shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                            >
-                                <option value="">Select gender</option>
-                                <option value="male">Male</option>
-                                <option value="female">Female</option>
-                                <option value="other">Other</option>
-                            </select>
-                        </div>
-
-                        {/* Submit Button */}
-                        <div>
-                            <button
-                                type="submit"
-                                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 focus:ring-offset-gray-900"
-                            >
-                                Save Changes
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
+      {/* Alerts */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-800/20 border border-red-700 text-red-300 rounded-md">
+          {error}
         </div>
+      )}
+      {success && (
+        <div className="mb-4 p-4 bg-emerald-800/20 border border-emerald-700 text-emerald-300 rounded-md">
+          {success}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+
+        {/* Avatar */}
+        <div className="flex items-center space-x-6">
+          <div>
+            <img
+              src={userInfo.avatar_url}
+              alt="Avatar"
+              className="h-16 w-16 object-cover rounded-full border-2 border-slate-700"
+            />
+          </div>
+          <label className="block w-full">
+            <span className="block text-sm text-slate-300 mb-1">Profile Photo</span>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              className="block w-full text-sm text-slate-400 file:mr-4 file:py-2 file:px-4
+                file:rounded-full file:border-0 file:font-semibold
+                file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700"
+            />
+          </label>
+        </div>
+
+        {/* Name */}
+        <div>
+          <label className="block text-sm text-slate-300 mb-1">Name</label>
+          <input
+            type="text"
+            name="name"
+            value={userInfo.name}
+            onChange={handleInputChange}
+            className="w-full rounded-md bg-slate-800 text-white border border-slate-700 shadow-sm focus:ring focus:ring-indigo-500/50"
+          />
+        </div>
+
+        {/* Email (readonly) */}
+        <div>
+          <label className="block text-sm text-slate-300 mb-1">Email</label>
+          <input
+            type="email"
+            value={userInfo.email}
+            disabled
+            className="w-full rounded-md bg-slate-800 text-slate-400 border border-slate-700"
+          />
+        </div>
+
+        {/* Birthdate */}
+        <div>
+          <label className="block text-sm text-slate-300 mb-1">Birthdate</label>
+          <input
+            type="date"
+            name="birthdate"
+            value={userInfo.birthdate}
+            onChange={handleInputChange}
+            className="w-full rounded-md bg-slate-800 text-white border border-slate-700 focus:ring focus:ring-indigo-500/50"
+          />
+        </div>
+
+        {/* Gender */}
+        <div>
+          <label className="block text-sm text-slate-300 mb-1">Gender</label>
+          <select
+            name="gender"
+            value={userInfo.gender}
+            onChange={handleInputChange}
+            className="w-full rounded-md bg-slate-800 text-white border border-slate-700 focus:ring focus:ring-indigo-500/50"
+          >
+            <option value="">Select gender</option>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        {/* Button */}
+        <div>
+          <button
+            type="submit"
+            className="w-full py-2 px-4 rounded-md bg-indigo-600 text-white font-semibold shadow hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          >
+            Save Changes
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
     );
 };
 

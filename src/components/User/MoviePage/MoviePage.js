@@ -44,7 +44,7 @@ const MoviePage = () => {
     }, [selectedDifficulty, selectedGenre, movies]);
 
     const handleMovieClick = (movieId) => {
-        router.push(`/Navigate/user/watchmovie/${movieId}`);
+        router.push(`/Navigate/user/movieinfopage/${movieId}`);
     };
 
     // Lấy danh sách thể loại duy nhất từ danh sách phim

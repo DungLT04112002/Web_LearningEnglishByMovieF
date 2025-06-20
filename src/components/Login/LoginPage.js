@@ -39,18 +39,33 @@ const Login = () => {
     };
 
     return (
-        <div className="login-container">
-            <div className="login-box">
-                <h2>Đăng nhập</h2>
-                <GoogleOAuthProvider clientId={clientId}>
-                    <GoogleLogin
-                        onSuccess={handleGoogleSuccess}
-                        onError={handleGoogleError}
-                        useOneTap
-                    />
-                </GoogleOAuthProvider>
-            </div>
-        </div>
+  <div className="relative min-h-screen w-full overflow-hidden">
+  {/* Ảnh nền */}
+  <img
+    src="/assets/HomePageImg.jpg"
+    alt="Background"
+    className="absolute inset-0 w-full h-full object-cover opacity-60 z-0"
+  />
+
+  {/* Overlay mờ đè lên ảnh */}
+  <div className="absolute inset-0 bg-opacity-50 z-10"></div>
+
+  {/* Login box nằm trên overlay */}
+  <div className="relative z-20 flex items-center justify-center min-h-screen">
+    <div className="bg-white bg-opacity-90 rounded-2xl shadow-2xl p-8 w-full max-w-md">
+      <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">Đăng nhập</h2>
+
+      <GoogleOAuthProvider clientId={clientId}>
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={handleGoogleError}
+          useOneTap
+        />
+      </GoogleOAuthProvider>
+    </div>
+  </div>
+</div>
+
     );
 };
 
