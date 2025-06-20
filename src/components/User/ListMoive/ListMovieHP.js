@@ -17,7 +17,7 @@ const ListMovieHP = ({ movies, level }) => {
     };
 
     const handleMovieClick = (movieId) => {
-        router.push(`/Navigate/user/watchmovie/${movieId}`);
+        router.push(`/Navigate/user/movieinfopage/${movieId}`);
     };
 
     return (
