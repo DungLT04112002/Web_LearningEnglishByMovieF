@@ -2,14 +2,12 @@
 import React, { useEffect, useState } from "react";
 import TaskBar from "../TaskBar/TaskBar";
 import axios from "axios";
-import { useParams, useSearchParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 
 const BASE_API_URL = 'http://localhost:8081/api'; // Đặt URL gốc của API ở đây
 
 const PracticePage = () => {
     const params = useParams();
-    const searchParams = useSearchParams();
-    const viewResult = searchParams.get('viewResult') === '1';
     const [quizzes, setQuizzes] = useState([]);
     const [movieId, setMovieId] = useState();
     const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -19,6 +17,7 @@ const PracticePage = () => {
     const [answerResults, setAnswerResults] = useState({});
     const [allQuestions, setAllQuestions] = useState([]); // Lưu tất cả câu hỏi để điều hướng
     const [questionNumberMap, setQuestionNumberMap] = useState({}); // Map để lưu số thứ tự của câu hỏi
+    const [selectedQuizType, setSelectedQuizType] = useState('all'); // Thêm state cho loại quiz
 
     useEffect(() => {
         console.log("movieid", params.movieId);
@@ -28,36 +27,6 @@ const PracticePage = () => {
             fetchMovieQuizzes();
         }
     }, [params]);
-
-    useEffect(() => {
-        if (viewResult) {
-            const result = JSON.parse(localStorage.getItem('practiceResultView'));
-            if (result) {
-                setScore(result.score);
-                setShowScore(true);
-                setShowAnswers(true);
-                setSelectedAnswers(result.answers);
-                // Tính lại answerResults để highlight đúng/sai từng câu
-                if (quizzes.length > 0) {
-                    const results = {};
-                    quizzes.forEach(quiz => {
-                        quiz.questions.forEach(question => {
-                            const selectedOption = result.answers[question.id];
-                            if (selectedOption) {
-                                const selectedOptionLabel = question.options.find(opt => opt.id === selectedOption)?.label;
-                                const isCorrect = selectedOptionLabel && selectedOptionLabel.toLowerCase() === question.answer.toLowerCase();
-                                results[question.id] = {
-                                    isCorrect,
-                                    selectedOption: selectedOptionLabel
-                                };
-                            }
-                        });
-                    });
-                    setAnswerResults(results);
-                }
-            }
-        }
-    }, [viewResult, quizzes]);
 
     const fetchMovieQuizzes = async () => {
         try {
@@ -138,25 +107,6 @@ const PracticePage = () => {
         setShowScore(true);
         setShowAnswers(true);
         setAnswerResults(results);
-
-        // --- Lưu vào localStorage ---
-        try {
-            const history = JSON.parse(localStorage.getItem('practiceHistory') || '[]');
-            const newRecord = {
-                time: new Date().toISOString(),
-                movieId,
-                totalQuestions,
-                totalCorrect,
-                totalWrong: totalQuestions - totalCorrect,
-                score: finalScore,
-                answers: selectedAnswers,
-                quizzes: quizzes.map(q => ({ id: q.id, passage: q.passage }))
-            };
-            history.push(newRecord);
-            localStorage.setItem('practiceHistory', JSON.stringify(history));
-        } catch (e) {
-            console.error('Lỗi khi lưu lịch sử làm bài:', e);
-        }
     };
 
     const handleRetakeQuiz = () => {
@@ -173,6 +123,9 @@ const PracticePage = () => {
             element.scrollIntoView({ behavior: 'smooth' });
         }
     };
+   const filteredQuizzes = selectedQuizType === 'all'
+        ? quizzes
+        : quizzes.filter(quiz => quiz.quiz_type === selectedQuizType);
 
     return (
         <div className="min-h-screen bg-gray-50">
@@ -182,7 +135,22 @@ const PracticePage = () => {
                 <div className="w-4/5 p-8">
                     <div className="max-w-4xl mx-auto">
                         <h1 className="text-4xl font-bold text-gray-800 text-center mb-8">Practice Quiz</h1>
-                        {quizzes.map((quiz) => (
+                               {/* Filter dropdown */}
+                <div className="flex items-center space-x-4 my-10">
+                    <label className="text-sm font-medium text-gray-700">Filter by type:</label>
+                    <select
+                        value={selectedQuizType}
+                        onChange={(e) => setSelectedQuizType(e.target.value)}
+                        className="rounded-md border-gray-300 shadow-sm text-black"
+                    >
+                        <option value="all">All Types</option>
+                        <option value="reading">Reading Comprehension</option>
+                        <option value="dialogue_reordering">Dialogue Reordering</option>
+                        <option value="translation">Translation</option>
+                        <option value="equivalent">Equivalent</option>
+                    </select>
+                </div>
+                        {filteredQuizzes.map((quiz) => (
                             <div key={quiz.id} className="bg-white rounded-xl shadow-lg p-8 mb-8 border border-gray-100">
                                 <div className="text-xl text-gray-800 font-semibold mb-6 leading-relaxed">
                                     {quiz.passage}
