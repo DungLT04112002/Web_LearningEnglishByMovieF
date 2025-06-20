@@ -2,12 +2,14 @@
 import React, { useEffect, useState } from "react";
 import TaskBar from "../TaskBar/TaskBar";
 import axios from "axios";
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 
 const BASE_API_URL = 'http://localhost:8081/api'; // Đặt URL gốc của API ở đây
 
 const PracticePage = () => {
     const params = useParams();
+    const searchParams = useSearchParams();
+    const viewResult = searchParams.get('viewResult') === '1';
     const [quizzes, setQuizzes] = useState([]);
     const [movieId, setMovieId] = useState();
     const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -26,6 +28,36 @@ const PracticePage = () => {
             fetchMovieQuizzes();
         }
     }, [params]);
+
+    useEffect(() => {
+        if (viewResult) {
+            const result = JSON.parse(localStorage.getItem('practiceResultView'));
+            if (result) {
+                setScore(result.score);
+                setShowScore(true);
+                setShowAnswers(true);
+                setSelectedAnswers(result.answers);
+                // Tính lại answerResults để highlight đúng/sai từng câu
+                if (quizzes.length > 0) {
+                    const results = {};
+                    quizzes.forEach(quiz => {
+                        quiz.questions.forEach(question => {
+                            const selectedOption = result.answers[question.id];
+                            if (selectedOption) {
+                                const selectedOptionLabel = question.options.find(opt => opt.id === selectedOption)?.label;
+                                const isCorrect = selectedOptionLabel && selectedOptionLabel.toLowerCase() === question.answer.toLowerCase();
+                                results[question.id] = {
+                                    isCorrect,
+                                    selectedOption: selectedOptionLabel
+                                };
+                            }
+                        });
+                    });
+                    setAnswerResults(results);
+                }
+            }
+        }
+    }, [viewResult, quizzes]);
 
     const fetchMovieQuizzes = async () => {
         try {
@@ -106,6 +138,25 @@ const PracticePage = () => {
         setShowScore(true);
         setShowAnswers(true);
         setAnswerResults(results);
+
+        // --- Lưu vào localStorage ---
+        try {
+            const history = JSON.parse(localStorage.getItem('practiceHistory') || '[]');
+            const newRecord = {
+                time: new Date().toISOString(),
+                movieId,
+                totalQuestions,
+                totalCorrect,
+                totalWrong: totalQuestions - totalCorrect,
+                score: finalScore,
+                answers: selectedAnswers,
+                quizzes: quizzes.map(q => ({ id: q.id, passage: q.passage }))
+            };
+            history.push(newRecord);
+            localStorage.setItem('practiceHistory', JSON.stringify(history));
+        } catch (e) {
+            console.error('Lỗi khi lưu lịch sử làm bài:', e);
+        }
     };
 
     const handleRetakeQuiz = () => {
