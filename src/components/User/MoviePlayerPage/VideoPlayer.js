@@ -192,10 +192,22 @@ const VideoDemo = () => {
         if (activeSubtitleRef.current) {
             activeSubtitleRef.current.scrollIntoView({
                 behavior: 'smooth',
-                block: 'start'
+                block: "start",
+                inline: "nearest"
             });
         }
     }, [currentTime]);
+
+    const activeEngIndex = englishSubtitles.findIndex(
+        sub => currentTime >= sub.startTime && currentTime <= sub.endTime
+    );
+
+    const currentEngSub = englishSubtitles[activeEngIndex];
+    const currentVieSub = currentEngSub
+        ? vietnameseSubtitles.find(
+            sub => currentEngSub.startTime >= sub.startTime && currentEngSub.startTime <= sub.endTime
+        )
+        : null;
 
     return (<div>
         <Taskbar />
@@ -295,7 +307,7 @@ const VideoDemo = () => {
                         <h3 className="text-gray-100 text-xl font-semibold mb-4">Danh sách phụ đề</h3>
                         <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                             {englishSubtitles.map((engSub, index) => {
-                                const isActive = findMatchingSubtitle([engSub], currentTime) !== undefined;
+                                const isActive = index === activeEngIndex;
                                 const vieSub = findMatchingSubtitle(vietnameseSubtitles, engSub.startTime);
                                 return (
                                     <div
@@ -306,16 +318,16 @@ const VideoDemo = () => {
                                             : 'text-gray-300 hover:bg-gray-700'
                                             }`}
                                     >
-                                        <div className="text-xs opacity-70 mb-1">
+                                        <div className="text-l opacity-70 mb-1">
                                             {formatTime(engSub.startTime)}
                                         </div>
                                         {isEngSub && (
-                                            <div className="text-sm whitespace-pre-line">
+                                            <div className="text-xl text-orange-200 whitespace-pre-line">
                                                 {engSub.text}
                                             </div>
                                         )}
                                         {isVietSub && vieSub && (
-                                            <div className="text-sm whitespace-pre-line">
+                                            <div className="text-l whitespace-pre-line">
                                                 {vieSub.text}
                                             </div>
                                         )}

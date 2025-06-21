@@ -5,10 +5,9 @@ const path = require('path');
 const fs = require('fs');
 const { authenticateToken } = require('../Middlerware/Auth');
 
-// --- Bắt đầu Cấu hình Multer (Chuyển từ Controller nếu cần) ---
-const storage = multer.diskStorage({
+// --- Bắt đầu Cấu hình Multer cho Subtitles ---
+const subtitleStorage = multer.diskStorage({
     destination: function (req, file, cb) {
-        // Sử dụng path.join để đảm bảo đường dẫn đúng trên các hệ điều hành
         const uploadDir = path.join(__dirname, '../../public/uploads/subtitles');
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
@@ -21,7 +20,7 @@ const storage = multer.diskStorage({
     }
 });
 
-const fileFilter = (req, file, cb) => {
+const subtitleFileFilter = (req, file, cb) => {
     if (file.mimetype === 'application/x-subrip' || file.originalname.toLowerCase().endsWith('.srt')) {
         cb(null, true);
     } else {
@@ -29,12 +28,42 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-const upload = multer({
-    storage: storage,
-    fileFilter: fileFilter,
-    limits: { fileSize: 1024 * 1024 * 5 } // Giới hạn 5MB
+const uploadSubtitle = multer({
+    storage: subtitleStorage,
+    fileFilter: subtitleFileFilter,
+    limits: { fileSize: 1024 * 1024 * 5 } // 5MB limit
 });
-// --- Kết thúc Cấu hình Multer ---
+// --- Kết thúc Cấu hình Multer cho Subtitles ---
+
+// --- Bắt đầu Cấu hình Multer cho Avatars ---
+const avatarStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        const uploadDir = path.join(__dirname, '../../public/uploads/avatars');
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, `avatar-${uniqueSuffix}${path.extname(file.originalname)}`);
+    }
+});
+
+const avatarFileFilter = (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+        cb(null, true);
+    } else {
+        cb(new Error('Only image files are allowed!'), false);
+    }
+};
+
+const uploadAvatar = multer({
+    storage: avatarStorage,
+    fileFilter: avatarFileFilter,
+    limits: { fileSize: 1024 * 1024 * 5 } // 5MB limit
+});
+// --- Kết thúc Cấu hình Multer cho Avatars ---
 
 
 // Import Controllers
@@ -61,7 +90,7 @@ router.delete('/api/movies/:id', authenticateToken(['admin']), movieController.d
 
 // --- Subtitle routes ---
 // Routes that allow both admin and employee access
-router.post('/api/subtitles', authenticateToken(['admin', 'employee']), upload.single('subtitleFile'), subController.addSubtitle);
+router.post('/api/subtitles', authenticateToken(['admin', 'employee']), uploadSubtitle.single('subtitleFile'), subController.addSubtitle);
 // Lấy tất cả subtitles (Không cần Multer)
 router.get('/api/subtitles', subController.getAllSubtitles);
 // Lấy subtitles của một phim (Không cần Multer)
@@ -69,7 +98,7 @@ router.get('/api/movies/:movie_id/subtitles', subController.getMovieSubtitles);
 // Lấy subtitle theo ngôn ngữ (Không cần Multer)
 router.get('/api/movies/:movie_id/subtitles/:language', subController.getSubtitleByLanguage);
 // Áp dụng middleware multer cho route cập nhật subtitle
-router.put('/api/subtitles/:id', authenticateToken(['admin', 'employee']), upload.single('subtitleFile'), subController.updateSubtitle);
+router.put('/api/subtitles/:id', authenticateToken(['admin', 'employee']), uploadSubtitle.single('subtitleFile'), subController.updateSubtitle);
 // Xóa subtitle (Không cần Multer)
 router.delete('/api/subtitles/:id', subController.deleteSubtitle);
 
@@ -103,7 +132,7 @@ router.post('/api/auth/google', authController.LoginGoogle);
 // Account routes
 router.get('/api/account', authenticateToken(['user', 'admin']), accountController.getAccountInfo);
 router.put('/api/account', authenticateToken(['user', 'admin']), accountController.updateAccountInfo);
-router.put('/api/account/avatar', authenticateToken(['user', 'admin']), accountController.updateAvatar);
+router.put('/api/account/avatar', authenticateToken(['user', 'admin']), uploadAvatar.single('avatar'), accountController.updateAvatar);
 
 // Admin routes for user management
 // router.get('/api/admin/users', accountController.getAllUsers);

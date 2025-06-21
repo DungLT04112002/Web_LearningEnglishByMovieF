@@ -209,17 +209,15 @@ const MovieQuiz = ({ movieId }) => {
     );
 
     return (
-        <div className=" mx-auto p-6">
+        <div className="p-6 bg-gray-100 min-h-screen">
             <div className="flex justify-between items-center mb-8">
-                <h1 className="text-3xl font-bold text-gray-800">Movie Quizzes</h1>
-
-                {/* Filter dropdown */}
+                <h1 className="text-3xl font-extrabold text-gray-800 tracking-wide">Movie Quizzes</h1>
                 <div className="flex items-center space-x-4">
-                    <label className="text-sm font-medium text-gray-700">Filter by type:</label>
+                    <label className="text-base font-semibold text-gray-700">Filter by type:</label>
                     <select
                         value={selectedQuizType}
                         onChange={(e) => setSelectedQuizType(e.target.value)}
-                        className="rounded-md border-gray-300 shadow-sm text-black"
+                        className="rounded-md border border-gray-300 shadow-sm py-2 px-3 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
                     >
                         <option value="all">All Types</option>
                         <option value="reading">Reading Comprehension</option>
@@ -229,25 +227,18 @@ const MovieQuiz = ({ movieId }) => {
                     </select>
                 </div>
             </div>
-
             {/* Quiz Modal */}
             {showQuizModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-2/3">
-                        <h2 className="text-xl font-semibold mb-4 text-black">Edit Quiz</h2>
-                        <div className="space-y-4">
+                <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl p-8 w-full max-w-2xl shadow-lg border border-gray-200">
+                        <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Quiz</h2>
+                        <div className="space-y-6">
                             <div>
-                                <label className="block text-black text-sm font-bold mb-2">Quiz Type</label>
+                                <label className="block text-gray-700 text-base font-semibold mb-2">Quiz Type</label>
                                 <select
                                     value={quizForm.quiz_type}
-                                    onChange={(e) => {
-                                        console.log("Selected quiz type:", e.target.value); // Debug log
-                                        setQuizForm(prev => ({
-                                            ...prev,
-                                            quiz_type: e.target.value
-                                        }));
-                                    }}
-                                    className="border rounded py-2 px-3 text-black leading-tight w-full"
+                                    onChange={(e) => setQuizForm(prev => ({ ...prev, quiz_type: e.target.value }))}
+                                    className="border rounded-md py-2 px-3 text-black w-full focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
                                 >
                                     <option value="reading">Reading Comprehension</option>
                                     <option value="dialogue_reordering">Dialogue Reordering</option>
@@ -256,27 +247,24 @@ const MovieQuiz = ({ movieId }) => {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-black text-sm font-bold mb-2">Passage</label>
+                                <label className="block text-gray-700 text-base font-semibold mb-2">Passage</label>
                                 <textarea
                                     value={quizForm.passage}
-                                    onChange={(e) => setQuizForm(prev => ({
-                                        ...prev,
-                                        passage: e.target.value
-                                    }))}
-                                    className="border rounded py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline w-full h-32 resize-none"
+                                    onChange={(e) => setQuizForm(prev => ({ ...prev, passage: e.target.value }))}
+                                    className="border rounded-md py-2 px-3 text-black w-full h-28 resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
                                 />
                             </div>
                         </div>
-                        <div className="flex justify-end space-x-2 mt-4">
+                        <div className="flex justify-end gap-4 mt-8">
                             <button
                                 onClick={() => setShowQuizModal(false)}
-                                className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition text-base"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleUpdateQuiz}
-                                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-base"
                             >
                                 Save
                             </button>
@@ -284,60 +272,59 @@ const MovieQuiz = ({ movieId }) => {
                     </div>
                 </div>
             )}
-
             {/* Question Modal */}
             {showQuestionModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-2/3">
-                        <h2 className="text-xl font-semibold mb-4 text-black">Edit Question</h2>
-                        <div className="space-y-4">
+                <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl p-8 w-full max-w-2xl shadow-lg border border-gray-200">
+                        <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Question</h2>
+                        <div className="space-y-6">
                             <div>
-                                <label className="block text-black text-sm font-bold mb-2">Question</label>
+                                <label className="block text-gray-700 text-base font-semibold mb-2">Question</label>
                                 <textarea
                                     type="text"
                                     value={questionForm.question}
                                     onChange={(e) => setQuestionForm({ ...questionForm, question: e.target.value })}
-                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline"
+                                    className="shadow appearance-none border rounded-md w-full py-2 px-3 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
                                 />
                             </div>
                             <div>
-                                <label className="block text-black text-sm font-bold mb-2">Answer</label>
+                                <label className="block text-gray-700 text-base font-semibold mb-2">Answer</label>
                                 <textarea
                                     type="text"
                                     value={questionForm.answer}
                                     onChange={(e) => setQuestionForm({ ...questionForm, answer: e.target.value })}
-                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline"
+                                    className="shadow appearance-none border rounded-md w-full py-2 px-3 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
                                 />
                             </div>
                             <div>
-                                <label className="block text-black text-sm font-bold mb-2">Explanation</label>
+                                <label className="block text-gray-700 text-base font-semibold mb-2">Explanation</label>
                                 <textarea
                                     type="text"
                                     value={questionForm.explanation}
                                     onChange={(e) => setQuestionForm({ ...questionForm, explanation: e.target.value })}
-                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline"
+                                    className="shadow appearance-none border rounded-md w-full py-2 px-3 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
                                 />
                             </div>
                             <div>
-                                <label className="block text-black text-sm font-bold mb-2">Quote (optional)</label>
+                                <label className="block text-gray-700 text-base font-semibold mb-2">Quote (optional)</label>
                                 <textarea
                                     type="text"
                                     value={questionForm.quote}
                                     onChange={(e) => setQuestionForm({ ...questionForm, quote: e.target.value })}
-                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline"
+                                    className="shadow appearance-none border rounded-md w-full py-2 px-3 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
                                 />
                             </div>
                         </div>
-                        <div className="flex justify-end space-x-2 mt-4">
+                        <div className="flex justify-end gap-4 mt-8">
                             <button
                                 onClick={() => setShowQuestionModal(false)}
-                                className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition text-base"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleUpdateQuestion}
-                                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-base"
                             >
                                 Save
                             </button>
@@ -345,42 +332,41 @@ const MovieQuiz = ({ movieId }) => {
                     </div>
                 </div>
             )}
-
             {/* Option Modal */}
             {showOptionModal && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                    <div className="bg-white rounded-lg p-6 w-2/3">
-                        <h2 className="text-xl font-semibold mb-4 text-black">Edit Option</h2>
-                        <div className="space-y-4">
+                <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-xl p-8 w-full max-w-2xl shadow-lg border border-gray-200">
+                        <h2 className="text-2xl font-bold mb-6 text-gray-800">Edit Option</h2>
+                        <div className="space-y-6">
                             <div>
-                                <label className="block text-black text-sm font-bold mb-2">Label</label>
+                                <label className="block text-gray-700 text-base font-semibold mb-2">Label</label>
                                 <textarea
                                     type="text"
                                     value={optionForm.label}
                                     onChange={(e) => setOptionForm({ ...optionForm, label: e.target.value })}
-                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline"
+                                    className="shadow appearance-none border rounded-md w-full py-2 px-3 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
                                 />
                             </div>
                             <div>
-                                <label className="block text-black text-sm font-bold mb-2">Content</label>
+                                <label className="block text-gray-700 text-base font-semibold mb-2">Content</label>
                                 <textarea
                                     type="text"
                                     value={optionForm.content}
                                     onChange={(e) => setOptionForm({ ...optionForm, content: e.target.value })}
-                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none focus:shadow-outline"
+                                    className="shadow appearance-none border rounded-md w-full py-2 px-3 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
                                 />
                             </div>
                         </div>
-                        <div className="flex justify-end space-x-2 mt-4">
+                        <div className="flex justify-end gap-4 mt-8">
                             <button
                                 onClick={() => setShowOptionModal(false)}
-                                className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition text-base"
                             >
                                 Cancel
                             </button>
                             <button
                                 onClick={handleUpdateOption}
-                                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition text-base"
                             >
                                 Save
                             </button>
@@ -388,76 +374,75 @@ const MovieQuiz = ({ movieId }) => {
                     </div>
                 </div>
             )}
-
             {/* Quiz list */}
-            <div className="space-y-6">
+            <div className="space-y-8">
                 {filteredQuizzes.map((quiz) => (
                     <div key={quiz.id} className="bg-white rounded-lg shadow-lg p-6">
                         <div className="flex justify-between items-center mb-4">
                             <div>
-                                <div className="text-lg font-semibold text-black">
+                                <div className="text-lg font-semibold text-gray-800">
                                     {quiz.quiz_type === 'reading' ? quiz.passage : `Quiz Type: ${quiz.quiz_type}`}
                                 </div>
-                                <div className="text-sm text-gray-500">
-                                    Type: {quiz.quiz_type || 'reading'}
-                                </div>
+                                <div className="text-sm text-gray-500 font-semibold">Type: {quiz.quiz_type || 'reading'}</div>
                             </div>
-                            <div className="flex items-center space-x-4">
+                            <div className="flex items-center gap-4">
                                 <button
                                     onClick={() => handleEditQuiz(quiz)}
-                                    className="text-blue-500 hover:text-blue-700"
+                                    className="text-blue-600 hover:text-blue-800 transition-colors duration-150"
+                                    title="Edit Quiz"
                                 >
-                                    <FiEdit size={20} />
+                                    <FiEdit className="w-5 h-5" />
                                 </button>
                                 <button
                                     onClick={() => handleDeleteQuiz(quiz.id)}
-                                    className="text-red-500 hover:text-red-700"
+                                    className="text-red-600 hover:text-red-800 transition-colors duration-150"
+                                    title="Delete Quiz"
                                 >
-                                    <FiTrash2 size={20} />
+                                    <FiTrash2 className="w-5 h-5" />
                                 </button>
                             </div>
                         </div>
-
-                        {/* Questions list */}
                         <div className="space-y-4">
                             {quiz.questions.map((question) => (
-                                <div key={question.id} className="border-b border-gray-300 pb-4">
-                                    <div className="font-semibold text-black">{question.question}</div>
-                                    <div className="text-sm text-black">Answer: {question.answer}</div>
-                                    <div className="text-sm text-black">Explanation: {question.explanation}</div>
-                                    {question.quote && <div className="text-sm text-black">Quote: {question.quote}</div>}
-                                    <div className="flex justify-end space-x-4 mt-2">
+                                <div key={question.id} className="border-b border-gray-200 pb-4">
+                                    <div className="font-semibold text-gray-800 mb-1">{question.question}</div>
+                                    <div className="text-sm text-black mb-1">Answer: <span className="font-semibold text-green-600">{question.answer}</span></div>
+                                    <div className="text-sm text-blue-600 mb-1">Explanation: {question.explanation}</div>
+                                    {question.quote && <div className="text-sm text-purple-600 mb-1">Quote: {question.quote}</div>}
+                                    <div className="flex justify-end gap-4 mt-2">
                                         <button
                                             onClick={() => handleEditQuestion(question)}
-                                            className="text-blue-500 hover:text-blue-700"
+                                            className="text-blue-600 hover:text-blue-800 transition-colors duration-150"
+                                            title="Edit Question"
                                         >
-                                            Edit
+                                            <FiEdit className="w-5 h-5" />
                                         </button>
                                         <button
                                             onClick={() => handleDeleteQuestion(question.id)}
-                                            className="text-red-500 hover:text-red-700"
+                                            className="text-red-600 hover:text-red-800 transition-colors duration-150"
+                                            title="Delete Question"
                                         >
-                                            Delete
+                                            <FiTrash2 className="w-5 h-5" />
                                         </button>
                                     </div>
-
-                                    {/* Options list */}
                                     <div className="ml-4 mt-2 space-y-2">
                                         {question.options.map((option) => (
                                             <div key={option.id} className="flex justify-between items-center">
-                                                <div className="text-sm text-black">{option.label}. {option.content}</div>
-                                                <div className="flex items-center space-x-2">
+                                                <div className="text-sm text-gray-700 font-medium">{option.label}. {option.content}</div>
+                                                <div className="flex items-center gap-2">
                                                     <button
                                                         onClick={() => handleEditOption(option)}
-                                                        className="text-blue-500 hover:text-blue-700"
+                                                        className="text-blue-600 hover:text-blue-800 transition-colors duration-150"
+                                                        title="Edit Option"
                                                     >
-                                                        Edit
+                                                        <FiEdit className="w-5 h-5" />
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeleteOption(option.id)}
-                                                        className="text-red-500 hover:text-red-700"
+                                                        className="text-red-600 hover:text-red-800 transition-colors duration-150"
+                                                        title="Delete Option"
                                                     >
-                                                        Delete
+                                                        <FiTrash2 className="w-5 h-5" />
                                                     </button>
                                                 </div>
                                             </div>

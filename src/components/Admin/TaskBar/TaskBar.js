@@ -4,7 +4,7 @@ const TaskBar = () => {
 
     return (
         <div className=" items-center flex bg-black bg-opacity-50  px-6 py-3" >
-            <Link href="/Navigate/manager/homepage">
+            <Link href="/Navigate/manager/movie">
                 <div className="flex items-center  " >
 
                     <img src="/assets/NLogo.png" alt="Logo" className="h-[6vh] mr-[40]" />

@@ -14,7 +14,7 @@ const HistoryPracticePage = () => {
     const router = useRouter();
 
     useEffect(() => {
-        // Lấy lịch sử từ localStorage
+        // Chỉ lấy lịch sử đã nộp từ localStorage
         const data = JSON.parse(localStorage.getItem('practiceHistory') || '[]');
         setHistory(data.reverse()); // Hiển thị bài mới nhất lên đầu
         // Lấy thumbnail cho các movieId
@@ -43,10 +43,23 @@ const HistoryPracticePage = () => {
         localStorage.setItem('practiceHistory', JSON.stringify([...newHistory].reverse())); // Lưu lại theo thứ tự cũ
     };
 
+    const handleClearHistory = () => {
+        localStorage.removeItem('practiceHistory');
+        window.location.reload();
+    };
+
     return (
         <div className="min-h-screen bg-gray-50">
             <TaskBar />
             <div className="max-w-5xl mx-auto py-10 px-4">
+                <div className="flex justify-end mb-6">
+                    <button
+                        onClick={handleClearHistory}
+                        className="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded shadow"
+                    >
+                        Xóa toàn bộ lịch sử
+                    </button>
+                </div>
                 <h1 className="text-4xl font-bold text-gray-800 text-center mb-10">Practice History</h1>
                 {history.length === 0 ? (
                     <div className="text-center text-gray-500 text-lg">No practice history found.</div>

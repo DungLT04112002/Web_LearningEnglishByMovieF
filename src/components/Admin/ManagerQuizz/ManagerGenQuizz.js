@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { FiTrash2, FiSave } from 'react-icons/fi';
+import { FiTrash2, FiSave, FiEdit } from 'react-icons/fi';
 import axios from 'axios';
 import createQuiz, { QUIZ_TYPES } from '../../../service/GeminiGenQuizz.mjs';
 import MQuiz from './ManagerQuizz';
@@ -157,116 +157,115 @@ const ManagerQuizz = () => {
 
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
-            {/* Header */}
-            <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-800">Quản lý Quiz</h1>
+            <div className="mb-8 flex items-center justify-between">
+                <h1 className="text-3xl font-extrabold text-gray-800 tracking-wide">Quản lý Bài tập</h1>
             </div>
-
-            {/* Movie Selection */}
-            <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Chọn phim
-                </label>
-                <select
-                    value={selectedMovie}
-                    onChange={(e) => handleMovieSelect(e.target.value)}
-                    className="w-full rounded-md border text-black border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                    <option value="">-- Chọn phim --</option>
-                    {movies.map((movie) => (
-                        <option key={movie.id} value={movie.id}>
-                            {movie.title}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {/* Selected Movie Info */}
-            {selectedMovie && (
-                <div className="mb-6 p-4 bg-white rounded-lg shadow">
-                    <h2 className="text-xl text-black font-bold mb-4">{selectedMovieTitle}</h2>
-
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Chọn loại bài tập
-                        </label>
-                        <select
-                            value={selectedQuizType}
-                            onChange={(e) => setSelectedQuizType(e.target.value)}
-                            className="w-full rounded-md border text-black border-gray-300 shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                        >
-                            <option value={QUIZ_TYPES.READING}>Bài đọc hiểu</option>
-                            <option value={QUIZ_TYPES.DIALOGUE_REORDERING}>Sắp xếp hội thoại</option>
-                            <option value={QUIZ_TYPES.TRANSLATION}>Dịch câu</option>
-                            <option value={QUIZ_TYPES.EQUIVALENT}>Chọn câu tương đương</option>
-                        </select>
-                    </div>
-
-                    <button
-                        onClick={handleCreateQuiz}
-                        disabled={quizLoading || subtitleLoading}
-                        className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 disabled:bg-gray-400"
+            <div className="mb-8 p-4 bg-white rounded-md shadow border border-gray-200">
+                <div className="w-full max-w-md">
+                    <label className="block text-base font-semibold text-gray-700 mb-2">Chọn phim tạo bài tập</label>
+                    <select
+                        value={selectedMovie}
+                        onChange={(e) => handleMovieSelect(e.target.value)}
+                        className="w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
                     >
-                        {quizLoading ? 'Đang tạo quiz...' : 'Tạo quiz từ phụ đề'}
-                    </button>
+                        <option value="">-- Chọn phim --</option>
+                        {movies.map((movie) => (
+                            <option key={movie.id} value={movie.id}>{movie.title}</option>
+                        ))}
+                    </select>
                 </div>
-            )}
-
-            {/* Error Display */}
+                {selectedMovie && (() => {
+                    const movie = movies.find(m => m.id === parseInt(selectedMovie));
+                    if (!movie) return null;
+                    return (
+                        <>
+                            <div className="flex items-center gap-4 mt-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                {movie.thumbnail_url ? (
+                                    <img src={movie.thumbnail_url} alt={movie.title} className="w-20 h-28 object-cover rounded shadow" />
+                                ) : (
+                                    <div className="w-20 h-28 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">No Img</div>
+                                )}
+                                <div className="flex-1">
+                                    <div className="text-lg font-bold text-gray-800 mb-1">{movie.title}</div>
+                                    <div className="text-sm text-gray-600 mb-1">Năm: {movie.release_year}</div>
+                                    <div className="text-sm text-gray-600 mb-1">Thể loại: {movie.genre}</div>
+                                    <div className="text-sm font-semibold mb-1">
+                                        Độ khó: <span className={`px-2 py-1 rounded-full text-xs font-semibold ${movie.difficulty === 1 ? 'bg-green-100 text-green-800' : movie.difficulty === 2 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>Level {movie.difficulty}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="mt-4">
+                                <label className="block text-base font-semibold text-gray-700 mb-2">Chọn loại bài tập</label>
+                                <select
+                                    value={selectedQuizType}
+                                    onChange={(e) => setSelectedQuizType(e.target.value)}
+                                    className="w-full max-w-md rounded-md border border-gray-300 shadow-sm py-2 px-3 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
+                                >
+                                    <option value={QUIZ_TYPES.READING}>Bài đọc hiểu</option>
+                                    <option value={QUIZ_TYPES.DIALOGUE_REORDERING}>Sắp xếp hội thoại</option>
+                                    <option value={QUIZ_TYPES.TRANSLATION}>Dịch câu</option>
+                                    <option value={QUIZ_TYPES.EQUIVALENT}>Chọn câu tương đương</option>
+                                </select>
+                                <button
+                                    onClick={handleCreateQuiz}
+                                    disabled={quizLoading || subtitleLoading}
+                                    className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded font-bold shadow-sm transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                >
+                                    {quizLoading ? 'Đang tạo quiz...' : 'Tạo quiz từ phụ đề'}
+                                </button>
+                            </div>
+                        </>
+                    );
+                })()}
+            </div>
             {quizError && (
-                <div className="mb-4 p-3 bg-red-100 text-red-700 border border-red-300 rounded-md">
+                <div className="mb-6 p-3 bg-red-100 text-red-700 border border-red-300 rounded font-semibold max-w-md mx-auto">
                     {quizError}
                 </div>
             )}
-
-            {/* Generated Quizzes */}
             {generatedQuizzes.length > 0 && (
-                <div className="mb-8">
-                    <h2 className="text-2xl font-bold mb-4">Quiz được tạo</h2>
-                    <div className="space-y-6">
+                <div className="mb-10">
+                    <h2 className="text-2xl font-bold mb-4 text-gray-800">Quiz được tạo</h2>
+                    <div className="space-y-8">
                         {generatedQuizzes.map((quiz, index) => (
-                            <div key={index} className="bg-white rounded-lg shadow-md p-6">
-                                <div className="flex justify-between items-start mb-4">
+                            <div key={index} className="bg-white rounded-lg shadow-lg p-6 w-full">
+                                <div className="flex justify-between items-center mb-4">
                                     <div>
-                                        <h3 className="text-lg font-semibold text-black">Quiz #{index + 1}</h3>
-                                        <p className="text-sm text-gray-500">Loại: {selectedQuizType}</p>
+                                        <div className="text-lg font-semibold text-gray-800">{quiz.passage}</div>
+                                        <div className="text-sm text-gray-500 font-semibold">Loại: {selectedQuizType}</div>
                                     </div>
-                                    <div className="space-x-2">
+                                    <div className="flex gap-2">
                                         <button
                                             onClick={() => handleSaveQuiz(quiz)}
-                                            className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 flex items-center"
+                                            className="text-green-600 hover:text-green-800 transition-colors duration-150"
+                                            title="Lưu Quiz"
                                         >
-                                            <FiSave className="w-4 h-4 mr-1" />
-                                            Lưu
+                                            <FiSave className="w-5 h-5" />
                                         </button>
                                         <button
                                             onClick={() => handleDeleteGeneratedQuiz(index)}
-                                            className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 flex items-center"
+                                            className="text-red-600 hover:text-red-800 transition-colors duration-150"
+                                            title="Xóa Quiz"
                                         >
-                                            <FiTrash2 className="w-4 h-4 mr-1" />
-                                            Xóa
+                                            <FiTrash2 className="w-5 h-5" />
                                         </button>
                                     </div>
                                 </div>
-
-                                {quiz.passage && (
-                                    <p className="text-gray-700 mb-4">{quiz.passage}</p>
-                                )}
-
                                 <div className="space-y-4">
                                     {quiz.questions.map((question, qIndex) => (
-                                        <div key={qIndex} className="border-t pt-4">
-                                            <p className="font-medium text-gray-800">{qIndex + 1}. {question.question}</p>
+                                        <div key={qIndex} className="border-b border-gray-200 pb-4">
+                                            <div className="font-semibold text-gray-800 mb-1">{qIndex + 1}. {question.question}</div>
                                             <ul className="ml-4 mt-2 space-y-1">
                                                 {question.options.map((opt, i) => (
-                                                    <li key={i} className={`pl-2 ${opt.startsWith(question.answer) ? 'text-green-700 font-semibold' : 'text-gray-700'}`}>
+                                                    <li key={i} className="pl-2 text-sm text-gray-700 font-medium">
                                                         {opt}
                                                     </li>
                                                 ))}
                                             </ul>
-                                            <div className="mt-2 text-sm text-gray-600">
-                                                <p><span className="font-medium">Giải thích:</span> {question.explanation}</p>
-                                                {question.quote && <p><span className="font-medium">Trích dẫn:</span> {question.quote}</p>}
+                                            <div className="mt-2 text-sm text-blue-600">
+                                                <p><span className="font-semibold text-green-600">Đáp án đúng:</span> {question.answer}</p>
+                                                <p><span className="font-semibold text-blue-600">Giải thích:</span> {question.explanation}</p>
+                                                {question.quote && <p className="text-purple-600"><span className="font-semibold">Trích dẫn:</span> {question.quote}</p>}
                                             </div>
                                         </div>
                                     ))}
@@ -276,8 +275,6 @@ const ManagerQuizz = () => {
                     </div>
                 </div>
             )}
-
-            {/* Display saved quizzes */}
             {selectedMovie && <MQuiz key={key} movieId={selectedMovie} />}
         </div>
     );

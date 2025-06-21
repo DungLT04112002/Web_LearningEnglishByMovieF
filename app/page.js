@@ -1,8 +1,8 @@
 import React from "react";
-import HomePage from "../src/components/User/HomePage/HomePage";
+import LoginPage from "../src/components/Login/LoginPage";
 const page = () => {
     return (
-        <HomePage />
+        <LoginPage />
     )
 }
 export default page;

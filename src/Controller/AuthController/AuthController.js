@@ -19,28 +19,15 @@ const LoginGoogle = async (req, res) => {
         });
 
         const payload = ticket.getPayload();
-        const email = payload.email;
+        const { email, name, picture } = payload;
 
-        // Query database to get user information
         const query = `
             SELECT id, email, name, role, avatar_url, birthdate, gender 
             FROM users 
             WHERE email = ?
         `;
 
-        connection.query(query, [email], (error, results) => {
-            if (error) {
-                console.error('Database error:', error);
-                return res.status(500).json({ message: 'Internal server error' });
-            }
-
-            if (results.length === 0) {
-                return res.status(401).json({ message: 'Email không tồn tại' });
-            }
-
-            const user = results[0];
-
-            // Create token with user information
+        const processLogin = (user) => {
             const accessToken = jwt.sign(
                 {
                     user: {
@@ -66,6 +53,43 @@ const LoginGoogle = async (req, res) => {
                     avatar_url: user.avatar_url
                 }
             });
+        };
+
+        connection.query(query, [email], (error, results) => {
+            if (error) {
+                console.error('Database error:', error);
+                return res.status(500).json({ message: 'Internal server error' });
+            }
+
+            if (results.length > 0) {
+                // User exists, proceed with login
+                const user = results[0];
+                return processLogin(user);
+            } else {
+                // User does not exist, create a new one
+                const newUser = {
+                    email,
+                    name,
+                    avatar_url: picture,
+                    role: 'user' // Default role
+                };
+                const insertQuery = 'INSERT INTO users SET ?';
+
+                connection.query(insertQuery, newUser, (insertError, insertResult) => {
+                    if (insertError) {
+                        console.error('Error creating new user:', insertError);
+                        return res.status(500).json({ message: 'Failed to create user' });
+                    }
+                    const newUserId = insertResult.insertId;
+                    const userForToken = {
+                        id: newUserId,
+                        ...newUser,
+                        birthdate: null,
+                        gender: null
+                    };
+                    return processLogin(userForToken);
+                });
+            }
         });
 
     } catch (err) {

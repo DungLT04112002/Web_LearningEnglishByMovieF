@@ -148,12 +148,15 @@ const updateAccountInfo = async (req, res) => {
 // Cập nhật avatar
 const updateAvatar = async (req, res) => {
     const userEmail = req.user.email;
-    const { avatar_url } = req.body;
 
     try {
-        if (!avatar_url) {
-            return res.status(400).json({ message: 'Avatar URL is required' });
+        if (!req.file) {
+            return res.status(400).json({ message: 'Avatar file is required' });
         }
+
+        // Create a URL path for the avatar
+        // The path should correspond to how you serve static files
+        const avatar_url = `/uploads/avatars/${req.file.filename}`;
 
         const query = `
             UPDATE users 
@@ -174,7 +177,10 @@ const updateAvatar = async (req, res) => {
                 return res.status(404).json({ message: 'User not found' });
             }
 
-            res.status(200).json({ message: 'Avatar updated successfully' });
+            res.status(200).json({
+                message: 'Avatar updated successfully',
+                avatar_url: avatar_url
+            });
         });
     } catch (error) {
         console.error('Error in updateAvatar:', error);

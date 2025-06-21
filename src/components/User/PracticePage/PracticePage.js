@@ -2,12 +2,15 @@
 import React, { useEffect, useState } from "react";
 import TaskBar from "../TaskBar/TaskBar";
 import axios from "axios";
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 const BASE_API_URL = 'http://localhost:8081/api'; // Đặt URL gốc của API ở đây
 
 const PracticePage = () => {
     const params = useParams();
+    const searchParams = useSearchParams();
+    const router = useRouter();
     const [quizzes, setQuizzes] = useState([]);
     const [movieId, setMovieId] = useState();
     const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -18,15 +21,55 @@ const PracticePage = () => {
     const [allQuestions, setAllQuestions] = useState([]); // Lưu tất cả câu hỏi để điều hướng
     const [questionNumberMap, setQuestionNumberMap] = useState({}); // Map để lưu số thứ tự của câu hỏi
     const [selectedQuizType, setSelectedQuizType] = useState('all'); // Thêm state cho loại quiz
+    const [isViewResult, setIsViewResult] = useState(false);
 
     useEffect(() => {
-        console.log("movieid", params.movieId);
-        if (params?.movieId) {
-            setMovieId(params.movieId);
+        if (searchParams.get('viewResult') === '1') {
+            setIsViewResult(true);
+            const result = JSON.parse(localStorage.getItem('practiceResultView'));
+            if (result) {
+                setMovieId(result.movieId);
+                setSelectedAnswers(result.answers || {});
+                setScore(result.score || 0);
+                setShowScore(true);
+                setShowAnswers(true);
+                // Tính đúng/sai cho từng câu
+                const res = {};
+                if (result.quizzes) {
+                    result.quizzes.forEach(quiz => {
+                        quiz.questions.forEach(question => {
+                            const selectedOption = result.answers?.[question.id];
+                            const selectedOptionLabel = question.options.find(opt => opt.id === selectedOption)?.label;
+                            const isCorrect = selectedOptionLabel && selectedOptionLabel.toLowerCase() === question.answer.toLowerCase();
+                            res[question.id] = {
+                                isCorrect,
+                                selectedOption: selectedOptionLabel
+                            };
+                        });
+                    });
+                }
+                setAnswerResults(res);
+                setQuizzes(result.quizzes || []);
+                // Tạo mảng tất cả câu hỏi để điều hướng
+                const allQuestions = result.quizzes.flatMap(quiz => quiz.questions);
+                setAllQuestions(allQuestions);
+
+                // Tạo map số thứ tự cho tất cả câu hỏi
+                const numberMap = {};
+                allQuestions.forEach((question, index) => {
+                    numberMap[question.id] = index + 1;
+                });
+                setQuestionNumberMap(numberMap);
+            }
+        } else {
             console.log("movieid", params.movieId);
-            fetchMovieQuizzes();
+            if (params?.movieId) {
+                setMovieId(params.movieId);
+                console.log("movieid", params.movieId);
+                fetchMovieQuizzes();
+            }
         }
-    }, [params]);
+    }, [params, searchParams]);
 
     const fetchMovieQuizzes = async () => {
         try {
@@ -107,6 +150,21 @@ const PracticePage = () => {
         setShowScore(true);
         setShowAnswers(true);
         setAnswerResults(results);
+        // Lưu vào lịch sử sau khi nộp bài
+        if (movieId) {
+            const oldHistory = JSON.parse(localStorage.getItem('practiceHistory') || '[]');
+            const newRecord = {
+                movieId,
+                answers: selectedAnswers,
+                score: finalScore,
+                totalCorrect,
+                totalWrong: totalQuestions - totalCorrect,
+                totalQuestions,
+                time: Date.now(),
+                quizzes,
+            };
+            localStorage.setItem('practiceHistory', JSON.stringify([...oldHistory, newRecord]));
+        }
     };
 
     const handleRetakeQuiz = () => {
@@ -126,6 +184,11 @@ const PracticePage = () => {
     const filteredQuizzes = selectedQuizType === 'all'
         ? quizzes
         : quizzes.filter(quiz => quiz.quiz_type === selectedQuizType);
+
+    const handleCardClick = (item) => {
+        localStorage.setItem('practiceResultView', JSON.stringify(item));
+        router.push(`/Navigate/user/practicepage/${item.movieId}?viewResult=1`);
+    };
 
     return (
         <div className="min-h-screen bg-gray-50">

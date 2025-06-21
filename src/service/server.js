@@ -17,6 +17,11 @@ const projectRoot = path.resolve(__dirname, '../../');
 dotenv.config({ path: path.resolve(projectRoot, '.env.local') });
 
 const app = express()
+
+// >>>>>>> DÒNG NÀY RẤT QUAN TRỌNG <<<<<<<<
+// Phục vụ các file tĩnh (như ảnh) từ thư mục 'public'
+app.use(express.static(path.join(projectRoot, 'public')));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cors()); // Enable CORS for all routes
