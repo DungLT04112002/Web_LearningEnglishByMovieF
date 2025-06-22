@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import TaskBar from '../TaskBar/TaskBar';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import LikeButton from '../LikeButton/LikeButton';
 
 const BASE_API_URL = "http://localhost:8081/api";
 
@@ -110,21 +111,23 @@ const MoviePage = () => {
                     {filteredMovies.map((movie) => (
                         <div
                             key={movie.id}
-                            onClick={() => handleMovieClick(movie.id)}
-                            className="bg-[#1f1f1f] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer transform hover:scale-105"
+                            className="bg-[#1f1f1f] rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 group"
                         >
-                            <div className="relative aspect-[2/3]">
+                            <div className="relative aspect-[2/3] cursor-pointer" onClick={() => handleMovieClick(movie.id)}>
                                 <img
                                     src={movie.thumbnail_url}
                                     alt={movie.title}
                                     className="w-full h-full object-cover"
                                 />
-                                <div className="absolute top-2 right-2 bg-blue-500 text-white px-2 py-1 rounded text-sm">
+                                <div className="absolute top-2 left-2 bg-blue-500 text-white px-2 py-1 rounded text-sm font-bold">
                                     Level {movie.difficulty}
                                 </div>
+                                <div className="absolute top-2 right-2">
+                                    <LikeButton movieId={movie.id} />
+                                </div>
                             </div>
-                            <div className="p-4">
-                                <h2 className="text-white text-lg font-semibold mb-2 truncate">
+                            <div className="p-4" onClick={() => handleMovieClick(movie.id)}>
+                                <h2 className="text-white text-lg font-semibold mb-2 truncate" title={movie.title}>
                                     {movie.title}
                                 </h2>
                                 <div className="flex justify-between items-center">

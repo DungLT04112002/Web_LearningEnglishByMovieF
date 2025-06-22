@@ -3,6 +3,7 @@ import React, { useRef } from "react";
 import { FiChevronLeft } from "react-icons/fi";
 import { FiChevronRight } from "react-icons/fi";
 import { useRouter } from "next/navigation";
+import LikeButton from "../LikeButton/LikeButton";
 
 const ListMovieHP = ({ movies, level }) => {
     const scrollRef = useRef(null);
@@ -38,15 +39,23 @@ const ListMovieHP = ({ movies, level }) => {
                     >
                         {filteredMovies.map((movie) => (
                             <div key={movie.id} className="flex-none w-[18%] items-center">
-                                <div
-                                    onClick={() => handleMovieClick(movie.id)}
-                                    className="cursor-pointer group"
-                                >
+                                <div className="cursor-pointer group relative">
                                     <img
                                         src={movie.thumbnail_url}
                                         alt={movie.title}
                                         className="rounded-xl mx-auto w-[80%] h-auto group-hover:scale-105 group-hover:shadow-2xl transition-transform duration-300 border-2 border-transparent group-hover:border-orange-400"
+                                        onClick={() => handleMovieClick(movie.id)}
                                     />
+
+                                    {/* Like Button Overlay */}
+                                    <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        <LikeButton
+                                            movieId={movie.id}
+                                            size={24}
+                                            className="bg-black bg-opacity-50 p-2 rounded-full"
+                                        />
+                                    </div>
+
                                     <p className="text-center text-xl mt-3 text-white font-bold group-hover:text-orange-400 transition-colors duration-300 truncate">
                                         {movie.title}
                                     </p>

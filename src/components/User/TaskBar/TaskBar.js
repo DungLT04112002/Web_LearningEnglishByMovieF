@@ -32,7 +32,7 @@ const TaskBar = () => {
                 </Link>
             </div>
             <div className="mx-[1vw]">
-                <Link href="">
+                <Link href="/Navigate/user/favoritepage">
                     <p className="font-bold text-white">Yêu thích</p>
                 </Link>
             </div>

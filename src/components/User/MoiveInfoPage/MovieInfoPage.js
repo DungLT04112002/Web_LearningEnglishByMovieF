@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import axios from 'axios';
+import LikeButton from '../LikeButton/LikeButton';
 
 const BASE_API_URL = 'http://localhost:8081/api';
 
@@ -77,6 +78,11 @@ const MovieInfoPage = () => {
               >
                 📝 Luyện tập
               </button>
+              <LikeButton
+                movieId={params.movieId}
+                size={20}
+                className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md shadow-md transition"
+              />
             </div>
           </div>
         </div>

@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, Suspense } from 'react';
 import Taskbar from '../TaskBar/TaskBar';
 import ReactPlayer from 'react-player';
 import axios from 'axios';
+import LikeButton from '../LikeButton/LikeButton';
 
 import { useRouter, useParams } from 'next/navigation';
 
@@ -280,6 +281,11 @@ const VideoDemo = () => {
                         >
                             Luyện tập
                         </button>
+                        <LikeButton
+                            movieId={params.movieId}
+                            size={20}
+                            className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-md transition duration-300 ease-in-out"
+                        />
                     </div>
 
                     {/* Movie Details */}

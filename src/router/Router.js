@@ -74,6 +74,7 @@ const questionController = require('../Controller/QuestionController/QuestionCon
 const optionController = require('../Controller/OptionController/OptionController');
 const authController = require('../Controller/AuthController/AuthController');
 const accountController = require('../Controller/AccountController/AccountController');
+const favoritesController = require('../Controller/FavoritesController/FavoritesController');
 
 // Middleware xử lý JSON (giữ nguyên)
 // Express v4.16.0 trở lên có sẵn express.json() và express.urlencoded(), không cần body-parser riêng
@@ -133,6 +134,12 @@ router.post('/api/auth/google', authController.LoginGoogle);
 router.get('/api/account', authenticateToken(['user', 'admin']), accountController.getAccountInfo);
 router.put('/api/account', authenticateToken(['user', 'admin']), accountController.updateAccountInfo);
 router.put('/api/account/avatar', authenticateToken(['user', 'admin']), uploadAvatar.single('avatar'), accountController.updateAvatar);
+
+// Favorites routes
+router.post('/api/favorites', authenticateToken(['user', 'admin']), favoritesController.addToFavorites);
+router.delete('/api/favorites', authenticateToken(['user', 'admin']), favoritesController.removeFromFavorites);
+router.get('/api/favorites', authenticateToken(['user', 'admin']), favoritesController.getUserFavorites);
+router.get('/api/favorites/check/:movie_id', authenticateToken(['user', 'admin']), favoritesController.checkIfFavorited);
 
 // Admin routes for user management
 // router.get('/api/admin/users', accountController.getAllUsers);
