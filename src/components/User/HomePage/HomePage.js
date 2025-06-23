@@ -1,6 +1,7 @@
 "use client"
 import React, { useEffect, useState } from 'react';
 import TaskBar from '../TaskBar/TaskBar';
+import Link from 'next/link'
 import ListMovieHP from '../ListMoive/ListMovieHP';
 import axios from 'axios';
 import { FiPlayCircle, FiEdit3 } from 'react-icons/fi';
@@ -47,17 +48,17 @@ const HomePage = () => {
                     />
                     {/* Hướng dẫn 2 bước */}
                     <div className="relative z-10 flex flex-col items-center w-full">
-                        <h1 className="text-white text-4xl md:text-5xl font-extrabold mb-8 text-center drop-shadow-lg tracking-wide">Chào mừng bạn đến với Movie Learning</h1>
+                        <h1 className="text-white text-4xl md:text-5xl font-extrabold mb-8 text-center drop-shadow-lg tracking-wide">Welcome to Movie Learning</h1>
                         <div className="flex flex-col md:flex-row items-center justify-center gap-10 w-full max-w-4xl">
                             {/* Bước 1 */}
                             <div className="flex flex-col items-center w-full md:w-1/2">
                                 <div className="flex items-center gap-4 mb-4">
                                     <div className="w-14 h-14 flex items-center justify-center rounded-full bg-blue-600 text-white text-2xl font-bold shadow-lg">1</div>
-                                    <span className="text-white text-2xl font-bold">Xem phim</span>
+                                    <span className="text-white text-2xl font-bold">Watch moive</span>
                                 </div>
                                 <div className="flex flex-col items-center">
-                                    <FiPlayCircle className="text-blue-400 mb-2" size={80} />
-                                    <p className="text-white text-center text-lg opacity-80 max-w-xs">Chọn bộ phim bạn yêu thích, xem với phụ đề song ngữ để luyện nghe và hiểu nội dung.</p>
+                                    <Link href="/Navigate/user/moviepage"> <FiPlayCircle className="text-blue-400 mb-2" size={80} /></Link>
+                                    <p className="text-white text-center text-lg opacity-80 max-w-xs">Choose your favorite movie, watch it with bilingual subtitles to practice listening and understand the content.</p>
                                 </div>
                             </div>
                             {/* Mũi tên hoặc đường nối */}
@@ -69,11 +70,11 @@ const HomePage = () => {
                             <div className="flex flex-col items-center w-full md:w-1/2">
                                 <div className="flex items-center gap-4 mb-4">
                                     <div className="w-14 h-14 flex items-center justify-center rounded-full bg-purple-600 text-white text-2xl font-bold shadow-lg">2</div>
-                                    <span className="text-white text-2xl font-bold">Làm bài tập</span>
+                                    <span className="text-white text-2xl font-bold">Practice</span>
                                 </div>
                                 <div className="flex flex-col items-center">
                                     <FiEdit3 className="text-purple-400 mb-2" size={80} />
-                                    <p className="text-white text-center text-lg opacity-80 max-w-xs">Sau khi xem phim, hãy thử sức với các bài tập tương tác để kiểm tra và nâng cao kỹ năng tiếng Anh của bạn.</p>
+                                    <p className="text-white text-center text-lg opacity-80 max-w-xs">After watching, challenge yourself with interactive exercises to test and improve your English skills.</p>
                                 </div>
                             </div>
                         </div>

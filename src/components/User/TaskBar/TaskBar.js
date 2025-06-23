@@ -23,22 +23,22 @@ const TaskBar = () => {
             {/* Nút Home */}
             <div className="mx-[1vw]">
                 <Link href="/Navigate/user/moviepage">
-                    <p className="font-bold text-white">Xem phim song ngữ</p>
+                    <p className="font-bold text-white">Movies</p>
                 </Link>
             </div>
             <div className="mx-[1vw]">
                 <Link href="/Navigate/user/historypracticepage">
-                    <p className="font-bold text-white">Luyện tập</p>
+                    <p className="font-bold text-white">History Practice</p>
                 </Link>
             </div>
             <div className="mx-[1vw]">
                 <Link href="/Navigate/user/favoritepage">
-                    <p className="font-bold text-white">Yêu thích</p>
+                    <p className="font-bold text-white">Favorite</p>
                 </Link>
             </div>
             <div className="mx-[1vw]">
                 <Link href="/Navigate/user/useraccount">
-                    <p className="font-bold text-white">Cá nhân</p>
+                    <p className="font-bold text-white">Person</p>
                 </Link>
             </div>
         </div >

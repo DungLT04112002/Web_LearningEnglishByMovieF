@@ -24,10 +24,15 @@ const PracticePage = () => {
     const [isViewResult, setIsViewResult] = useState(false);
 
     useEffect(() => {
+        // Có 2 trường hợp nhảy vào trang PracticePage
+        // Trường hợp 1: Từ vào để làm bài tập
+        // Trường hợp 2: Từ trang HistoryPracticePage vào để chi tiết bài kiểm tra cũ
         if (searchParams.get('viewResult') === '1') {
+        // Trường hợp 1: Từ vào để làm bài tập
             setIsViewResult(true);
             const result = JSON.parse(localStorage.getItem('practiceResultView'));
             if (result) {
+                console.log("call----------------------------");
                 setMovieId(result.movieId);
                 setSelectedAnswers(result.answers || {});
                 setScore(result.score || 0);
@@ -62,6 +67,7 @@ const PracticePage = () => {
                 setQuestionNumberMap(numberMap);
             }
         } else {
+            // Trường hợp 2: Từ trang HistoryPracticePage vào để chi tiết bài kiểm tra cũ
             console.log("movieid", params.movieId);
             if (params?.movieId) {
                 setMovieId(params.movieId);
@@ -99,7 +105,7 @@ const PracticePage = () => {
             );
 
             setQuizzes(quizzesWithQuestions);
-            // Tạo mảng tất cả câu hỏi để điều hướng
+            // Tạo mảng tất cả câu hỏi để điều hướng ( làm phảng mảng question trong  quizzesWithQuestion)
             const allQuestions = quizzesWithQuestions.flatMap(quiz => quiz.questions);
             setAllQuestions(allQuestions);
 
@@ -118,7 +124,7 @@ const PracticePage = () => {
     const handleAnswerSelect = (questionId, optionId) => {
         setSelectedAnswers(prev => ({
             ...prev,
-            [questionId]: optionId
+            [questionId]: optionId // key questionID động cho value optionID
         }));
     };
 
@@ -130,9 +136,9 @@ const PracticePage = () => {
         quizzes.forEach(quiz => {
             quiz.questions.forEach(question => {
                 totalQuestions++;
-                const selectedOption = selectedAnswers[question.id];
+                const selectedOption = selectedAnswers[question.id]; // selectedOption = id của option
                 if (selectedOption) {
-                    const selectedOptionLabel = question.options.find(opt => opt.id === selectedOption)?.label;
+                    const selectedOptionLabel = question.options.find(opt => opt.id === selectedOption)?.label; // lấy label A B C D
                     const isCorrect = selectedOptionLabel && selectedOptionLabel.toLowerCase() === question.answer.toLowerCase();
                     results[question.id] = {
                         isCorrect,

@@ -106,7 +106,7 @@ const ManagerUser = () => {
 
                     {showAddForm && (
                         <form onSubmit={handleCreateUser} className="mb-8 p-4 bg-gray-50 rounded-lg">
-                            <h3 className="text-lg font-semibold mb-4">Create New User</h3>
+                            <h3 className="text-lg text-black font-semibold mb-4">Create New User</h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Email</label>
@@ -116,18 +116,18 @@ const ManagerUser = () => {
                                         value={newUser.email}
                                         onChange={handleInputChange}
                                         required
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        className="mt-1 text-black block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Name</label>
+                                    <label className="block text-black text-sm font-medium text-gray-700">Name</label>
                                     <input
                                         type="text"
                                         name="name"
                                         value={newUser.name}
                                         onChange={handleInputChange}
                                         required
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        className="mt-1  block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                     />
                                 </div>
                                 <div>
@@ -137,7 +137,7 @@ const ManagerUser = () => {
                                         name="birthdate"
                                         value={newUser.birthdate}
                                         onChange={handleInputChange}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        className="mt-1 text-black block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                     />
                                 </div>
                                 <div>
@@ -146,7 +146,7 @@ const ManagerUser = () => {
                                         name="gender"
                                         value={newUser.gender}
                                         onChange={handleInputChange}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        className="mt-1 text-black block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                     >
                                         <option value="">Select gender</option>
                                         <option value="male">Male</option>
@@ -160,7 +160,7 @@ const ManagerUser = () => {
                                         name="role"
                                         value={newUser.role}
                                         onChange={handleInputChange}
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                                        className="mt-1 block w-full text-black rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                                     >
                                         <option value="user">User</option>
                                         <option value="admin">Admin</option>

@@ -3,13 +3,13 @@ import React, { useEffect, useState } from "react";
 import TaskBar from "../TaskBar/TaskBar";
 import axios from "axios";
 import { useRouter } from 'next/navigation';
-import { FaTrash } from 'react-icons/fa';
+import { FaTrash, FaCheck, FaTimes } from 'react-icons/fa';
 
 const BASE_API_URL = 'http://localhost:8081/api'; // Đổi thành API backend của bạn nếu cần
 
 const HistoryPracticePage = () => {
     const [history, setHistory] = useState([]);
-    const [movieThumbnails, setMovieThumbnails] = useState({});
+    const [movies, setmovies] = useState({});
     const [selectedIndex, setSelectedIndex] = useState(null);
     const router = useRouter();
 
@@ -20,12 +20,12 @@ const HistoryPracticePage = () => {
         // Lấy thumbnail cho các movieId
         const uniqueMovieIds = [...new Set(data.map(item => item.movieId))];
         uniqueMovieIds.forEach(async (movieId) => {
-            if (!movieThumbnails[movieId]) {
+            if (!movies[movieId]) {
                 try {
                     const res = await axios.get(`${BASE_API_URL}/movies/${movieId}`);
-                    setMovieThumbnails(prev => ({ ...prev, [movieId]: res.data.thumbnail_url }));
+                    setmovies(prev => ({ ...prev, [movieId]: res.data }));
                 } catch (e) {
-                    setMovieThumbnails(prev => ({ ...prev, [movieId]: null }));
+                    setmovies(prev => ({ ...prev, [movieId]: null }));
                 }
             }
         });
@@ -57,7 +57,7 @@ const HistoryPracticePage = () => {
                         onClick={handleClearHistory}
                         className="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded shadow"
                     >
-                        Xóa toàn bộ lịch sử
+                        Delete All
                     </button>
                 </div>
                 <h1 className="text-4xl font-bold text-gray-800 text-center mb-10">Practice History</h1>
@@ -81,8 +81,8 @@ const HistoryPracticePage = () => {
                                 </button>
                                 {/* Thumbnail */}
                                 <div className="h-48 w-full rounded-t-xl overflow-hidden bg-gray-200 flex items-center justify-center">
-                                    {movieThumbnails[item.movieId] ? (
-                                        <img src={movieThumbnails[item.movieId]} alt="thumbnail" className="object-cover w-full h-full" />
+                                    {movies[item.movieId] ? (
+                                        <img src={movies[item.movieId].thumbnail_url} alt="thumbnail" className="object-cover w-full h-full" />
                                     ) : (
                                         <span className="text-gray-400">No Image</span>
                                     )}
@@ -93,33 +93,16 @@ const HistoryPracticePage = () => {
                                     <div className="text-gray-600 text-sm mb-1">Time: {new Date(item.time).toLocaleString()}</div>
                                     <div className="flex items-center gap-3 mb-1">
                                         <span className="text-blue-600 font-semibold">Score: {item.score?.toFixed(1)}%</span>
-                                        <span className="text-green-600">✔ {item.totalCorrect}</span>
-                                        <span className="text-red-600">✘ {item.totalWrong}</span>
+                                        <span className="text-green-600 inline-flex items-center gap-1">
+                                            <FaCheck /> {item.totalCorrect}
+                                        </span>
+                                        <span className="text-red-600 inline-flex items-center gap-1">
+                                            <FaTimes /> {item.totalWrong}
+                                        </span>
+
                                     </div>
                                     <div className="text-gray-500 text-xs">Total Questions: {item.totalQuestions}</div>
                                 </div>
-                                {/* Expand detail */}
-                                {selectedIndex === idx && (
-                                    <div className="p-5 border-t border-gray-200 bg-gray-50">
-                                        <div className="font-semibold text-gray-700 mb-2">Your Answers:</div>
-                                        <ul className="list-disc ml-5 text-sm text-gray-700">
-                                            {Object.entries(item.answers).map(([qid, oid]) => (
-                                                <li key={qid}>
-                                                    QID: {qid} → Option ID: {oid}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                        <div className="mt-4">
-                                            <div className="font-semibold text-gray-700 mb-1">Quiz Info:</div>
-                                            {item.quizzes && item.quizzes.map(q => (
-                                                <div key={q.id} className="mb-2 text-xs text-gray-600">
-                                                    <span className="font-bold">Quiz ID:</span> {q.id}<br />
-                                                    <span className="font-bold">Passage:</span> {q.passage}
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
                             </div>
                         ))}
                     </div>

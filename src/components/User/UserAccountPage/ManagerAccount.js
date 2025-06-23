@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import Login from '../../Login/LoginPage';
+import axiosInstance from '@/src/utils/axios';
 
 const ManagerAccount = () => {
   const router = useRouter();
@@ -24,8 +26,8 @@ const ManagerAccount = () => {
     try {
       const token = localStorage.getItem('accessToken');
       if (!token) {
-        setError('No authentication token found');
-        setLoading(false);
+        alert('Bạn chưa đăng nhập. Vui lòng đăng nhập để vào trang cá nhân.');
+        router.push('/');
         return;
       }
 
@@ -47,11 +49,6 @@ const ManagerAccount = () => {
       setLoading(false);
     } catch (err) {
       console.error('Error fetching user info:', err);
-      if (err.response) {
-        setError(err.response.data.message || 'Failed to fetch user information');
-      } else {
-        setError('Failed to fetch user information');
-      }
       setLoading(false);
     }
   };
@@ -63,7 +60,10 @@ const ManagerAccount = () => {
       [name]: value
     }));
   };
-
+  const LogOut = () => {
+    localStorage.removeItem('accessToken');
+    router.push('/Navigate/user/homepage');
+  }
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -98,12 +98,7 @@ const ManagerAccount = () => {
 
     try {
       const token = localStorage.getItem('accessToken');
-      const response = await axios.put('http://localhost:8081/api/account/avatar', formData, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      });
+      const response = await axiosInstance.put('http://localhost:8081/api/account/avatar', formData);
 
       if (response.data && response.data.avatar_url) {
         setUserInfo(prev => ({
@@ -129,7 +124,7 @@ const ManagerAccount = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
+    <div className="min-h-screen bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 flex justify-center">
       <div className="w-full max-w-2xl">
         <div className="bg-slate-900 shadow-lg rounded-xl p-8 border border-slate-800">
           <h2 className="text-3xl font-bold text-white mb-8 text-center">Account Settings</h2>
@@ -225,13 +220,21 @@ const ManagerAccount = () => {
             <div>
               <button
                 type="submit"
-                className="w-full py-2 px-4 rounded-md bg-indigo-600 text-white font-semibold shadow hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                className="w-full py-2 px-4 rounded-md bg-gray-600 text-white font-semibold shadow hover:bg-gray-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
               >
                 Save Changes
               </button>
             </div>
 
           </form>
+          <div>
+            <button
+              onClick={LogOut}
+              className="w-full py-2 px-4 rounded-md bg-orange-400 text-white font-semibold shadow hover:bg-orange-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            >
+              Log Out
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -52,12 +52,13 @@ const VideoDemo = () => {
             setMovieDetails(null);
         }
     };
-
+    // Lấy danh sách phim cùng độ khó
     const fetchRelatedMovies = async (currentMovieDifficulty, currentMovieId) => {
         try {
             const response = await axios.get(`${BASE_API_URL}/movies`);
 
             if (response.data) {
+                // filter những phim có cùng độ khó
                 const filteredRelated = response.data.filter(movie =>
                     movie.difficulty === currentMovieDifficulty && movie.id !== currentMovieId
                 );
@@ -261,25 +262,25 @@ const VideoDemo = () => {
                             onClick={toggleBothSubs}
                             className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md transition duration-300 ease-in-out"
                         >
-                            Xem song ngữ
+                            Eng & Vie
                         </button>
                         <button
                             onClick={toggleEnglishOnly}
                             className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md transition duration-300 ease-in-out"
                         >
-                            Chỉ tiếng Anh
+                            English
                         </button>
                         <button
                             onClick={toggleVietnameseOnly}
                             className="bg-yellow-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-md transition duration-300 ease-in-out"
                         >
-                            Chỉ tiếng Việt
+                            Vietnamese
                         </button>
                         <button
                             onClick={() => router.push(`/Navigate/user/practicepage/${params.movieId}`)}
                             className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-md transition duration-300 ease-in-out"
                         >
-                            Luyện tập
+                            Practice
                         </button>
                         <LikeButton
                             movieId={params.movieId}
@@ -297,10 +298,10 @@ const VideoDemo = () => {
                                 )}
                             </div>
                             <div className="flex-1 text-gray-300">
-                                <h4 className="text-gray-100 text-2xl font-semibold mb-3">Thông tin phim</h4>
-                                <p className="text-base mb-2"><strong>Độ khó:</strong> {movieDetails.difficulty}</p>
-                                <p className="text-base mb-2"><strong>Thể loại:</strong> {movieDetails.genre}</p>
-                                <p className="text-base whitespace-pre-line leading-relaxed"><strong>Mô tả:</strong> {movieDetails.description}</p>
+                                <h4 className="text-gray-100 text-2xl font-semibold mb-3">Movie Infomation</h4>
+                                <p className="text-base mb-2"><strong>Difficulty:</strong> {movieDetails.difficulty}</p>
+                                <p className="text-base mb-2"><strong>Genre:</strong> {movieDetails.genre}</p>
+                                <p className="text-base whitespace-pre-line leading-relaxed"><strong>Description:</strong> {movieDetails.description}</p>
                             </div>
                         </div>
                     )}
@@ -310,35 +311,39 @@ const VideoDemo = () => {
                 <div className="md:col-span-3 flex flex-col gap-6">
                     {/* Subtitle list */}
                     <div className="bg-gray-800 rounded-lg shadow-md flex flex-col p-5 overflow-hidden" style={{ height: videoHeight > 0 ? videoHeight : 'auto' }}>
-                        <h3 className="text-gray-100 text-xl font-semibold mb-4">Danh sách phụ đề</h3>
+                        <h3 className="text-gray-100 text-xl font-semibold mb-4">List subtitle</h3>
                         <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                             {englishSubtitles.map((engSub, index) => {
                                 const isActive = index === activeEngIndex;
                                 const vieSub = findMatchingSubtitle(vietnameseSubtitles, engSub.startTime);
-                                return (
-                                    <div
-                                        key={index}
-                                        ref={isActive ? activeSubtitleRef : null}
-                                        className={`p-3 border-b border-gray-700 transition-all duration-300 ${isActive
-                                            ? 'bg-green-700 text-white rounded-md'
-                                            : 'text-gray-300 hover:bg-gray-700'
-                                            }`}
-                                    >
-                                        <div className="text-l opacity-70 mb-1">
-                                            {formatTime(engSub.startTime)}
+                                if (vieSub) {
+                                    return (
+                                        <div
+                                            key={index}
+                                            ref={isActive ? activeSubtitleRef : null}
+                                            className={`p-3 border-b border-gray-700 transition-all duration-300 ${isActive
+                                                ? 'bg-green-700 text-white rounded-md'
+                                                : 'text-gray-300 hover:bg-gray-700'
+                                                }`}
+                                        >
+                                            {(
+                                                <div className="text-l opacity-70 mb-1">
+                                                    {formatTime(engSub.startTime)}
+                                                </div>
+                                            )}
+                                            {isEngSub && (
+                                                <div className="text-xl text-orange-200 whitespace-pre-line">
+                                                    {engSub.text}
+                                                </div>
+                                            )}
+                                            {isVietSub && (
+                                                <div className="text-l whitespace-pre-line">
+                                                    {vieSub.text}
+                                                </div>
+                                            )}
                                         </div>
-                                        {isEngSub && (
-                                            <div className="text-xl text-orange-200 whitespace-pre-line">
-                                                {engSub.text}
-                                            </div>
-                                        )}
-                                        {isVietSub && vieSub && (
-                                            <div className="text-l whitespace-pre-line">
-                                                {vieSub.text}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
+                                    );
+                                }
                             })}
                         </div>
                     </div>
@@ -346,7 +351,7 @@ const VideoDemo = () => {
                     {/* Related Movies List */}
                     {relatedMovies.length > 0 && (
                         <div className="bg-gray-800 rounded-lg shadow-md p-5 flex flex-col">
-                            <h4 className="text-gray-100 text-xl font-semibold mb-4">Phim cùng độ khó</h4>
+                            <h4 className="text-gray-100 text-xl font-semibold mb-4">Suggestion</h4>
                             {/* Scrollable list */}
                             <div className="flex-1 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800" style={{ maxHeight: '500px' }}> {/* Adjust max-height as needed */}
                                 <div className="flex flex-col gap-4">

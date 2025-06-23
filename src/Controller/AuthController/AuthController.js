@@ -4,11 +4,6 @@ const connection = require('../../config/database');
 
 const client = new OAuth2Client("134627762597-cig5pd6j5po4m3msuq4qi2p29pp9evbk.apps.googleusercontent.com");
 
-const listUsers = [
-    { id: 1, email: "luutiendung04112002@gmail.com", role: 'admin' },
-    { id: 2, email: "luutiendung0411@gmail.com", role: 'employee' },
-];
-
 const LoginGoogle = async (req, res) => {
     const { credential } = req.body;
 
@@ -41,7 +36,7 @@ const LoginGoogle = async (req, res) => {
                     }
                 },
                 process.env.SECRET_KEY,
-                { expiresIn: '1h' }
+                { expiresIn: '5h' }
             );
 
             return res.json({
@@ -62,27 +57,24 @@ const LoginGoogle = async (req, res) => {
             }
 
             if (results.length > 0) {
-                // User exists, proceed with login
+                // Tài khoản tồn tại cho phép login
                 const user = results[0];
                 return processLogin(user);
             } else {
-                // User does not exist, create a new one
+                // Tài khoản không tồn tại thêm tài khoàn này vào 
                 const newUser = {
                     email,
                     name,
                     avatar_url: picture,
-                    role: 'user' // Default role
+                    role: 'user' // role
                 };
                 const insertQuery = 'INSERT INTO users SET ?';
 
-                connection.query(insertQuery, newUser, (insertError, insertResult) => {
+                connection.query(insertQuery, newUser, (insertError) => {
                     if (insertError) {
-                        console.error('Error creating new user:', insertError);
                         return res.status(500).json({ message: 'Failed to create user' });
                     }
-                    const newUserId = insertResult.insertId;
                     const userForToken = {
-                        id: newUserId,
                         ...newUser,
                         birthdate: null,
                         gender: null

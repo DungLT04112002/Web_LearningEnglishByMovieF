@@ -56,10 +56,10 @@ const MovieInfoPage = () => {
           <div className="max-w-xl">
             <h1 className="text-4xl font-bold mb-4">{movieDetails.title}</h1>
             <p className="text-sm mb-2">
-              <span className="font-semibold">Thể loại:</span> {movieDetails.genre}
+              <span className="font-semibold">Genre:</span> {movieDetails.genre}
             </p>
             <p className="text-sm mb-2">
-              <span className="font-semibold">Độ khó:</span> {movieDetails.difficulty}
+              <span className="font-semibold">Difficulty:</span> {movieDetails.difficulty}
             </p>
             <p className="text-base text-gray-200 whitespace-pre-line leading-relaxed mb-6">
               {movieDetails.description}
@@ -70,13 +70,13 @@ const MovieInfoPage = () => {
                 onClick={() => router.push(`/Navigate/user/watchmovie/${params.movieId}`)}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-md shadow-md transition"
               >
-                ▶ Xem phim
+                ▶ Watch
               </button>
               <button
                 onClick={() => router.push(`/Navigate/user/practicepage/${params.movieId}`)}
                 className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-md shadow-md transition"
               >
-                📝 Luyện tập
+                📝 Practice
               </button>
               <LikeButton
                 movieId={params.movieId}

@@ -45,7 +45,6 @@ const ManagerQuizz = () => {
                 setQuizError('Không thể lấy danh sách phim');
             }
         } catch (error) {
-            console.error('Error fetching movies:', error);
             setQuizError('Lỗi khi lấy danh sách phim');
         }
     };
@@ -158,17 +157,17 @@ const ManagerQuizz = () => {
     return (
         <div className="p-6 bg-gray-100 min-h-screen">
             <div className="mb-8 flex items-center justify-between">
-                <h1 className="text-3xl font-extrabold text-gray-800 tracking-wide">Quản lý Bài tập</h1>
+                <h1 className="text-3xl font-extrabold text-gray-800 tracking-wide">Manager Quiz</h1>
             </div>
             <div className="mb-8 p-4 bg-white rounded-md shadow border border-gray-200">
                 <div className="w-full max-w-md">
-                    <label className="block text-base font-semibold text-gray-700 mb-2">Chọn phim tạo bài tập</label>
+                    <label className="block text-base font-semibold text-gray-700 mb-2">Choose a movie to generate quiz</label>
                     <select
                         value={selectedMovie}
                         onChange={(e) => handleMovieSelect(e.target.value)}
                         className="w-full rounded-md border border-gray-300 shadow-sm py-2 px-3 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
                     >
-                        <option value="">-- Chọn phim --</option>
+                        <option value="">-- Choose movie --</option>
                         {movies.map((movie) => (
                             <option key={movie.id} value={movie.id}>{movie.title}</option>
                         ))}
@@ -186,32 +185,32 @@ const ManagerQuizz = () => {
                                     <div className="w-20 h-28 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs">No Img</div>
                                 )}
                                 <div className="flex-1">
-                                    <div className="text-lg font-bold text-gray-800 mb-1">{movie.title}</div>
-                                    <div className="text-sm text-gray-600 mb-1">Năm: {movie.release_year}</div>
-                                    <div className="text-sm text-gray-600 mb-1">Thể loại: {movie.genre}</div>
-                                    <div className="text-sm font-semibold mb-1">
-                                        Độ khó: <span className={`px-2 py-1 rounded-full text-xs font-semibold ${movie.difficulty === 1 ? 'bg-green-100 text-green-800' : movie.difficulty === 2 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>Level {movie.difficulty}</span>
+                                    <div className="text-lg font-bold text-gray-600 mb-1">{movie.title}</div>
+                                    <div className="text-sm text-gray-600 mb-1">Year: {movie.release_year}</div>
+                                    <div className="text-sm text-gray-600 mb-1">Genre: {movie.genre}</div>
+                                    <div className="text-sm font-semibold text-gray-600 mb-1">
+                                        Độ khó: <span className={`px-2 py-1 rounded-full text-xs text-black font-semibold ${movie.difficulty === 1 ? 'bg-green-100 text-green-800' : movie.difficulty === 2 ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>Level {movie.difficulty}</span>
                                     </div>
                                 </div>
                             </div>
                             <div className="mt-4">
-                                <label className="block text-base font-semibold text-gray-700 mb-2">Chọn loại bài tập</label>
+                                <label className="block text-base font-semibold text-gray-700 mb-2">Choose type quiz</label>
                                 <select
                                     value={selectedQuizType}
                                     onChange={(e) => setSelectedQuizType(e.target.value)}
                                     className="w-full max-w-md rounded-md border border-gray-300 shadow-sm py-2 px-3 text-black focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition"
                                 >
-                                    <option value={QUIZ_TYPES.READING}>Bài đọc hiểu</option>
-                                    <option value={QUIZ_TYPES.DIALOGUE_REORDERING}>Sắp xếp hội thoại</option>
-                                    <option value={QUIZ_TYPES.TRANSLATION}>Dịch câu</option>
-                                    <option value={QUIZ_TYPES.EQUIVALENT}>Chọn câu tương đương</option>
+                                    <option value={QUIZ_TYPES.READING}>READING</option>
+                                    <option value={QUIZ_TYPES.DIALOGUE_REORDERING}>DIALOGUE_REORDERING</option>
+                                    <option value={QUIZ_TYPES.TRANSLATION}>TRANSLATION</option>
+                                    <option value={QUIZ_TYPES.EQUIVALENT}>EQUIVALENT</option>
                                 </select>
                                 <button
                                     onClick={handleCreateQuiz}
                                     disabled={quizLoading || subtitleLoading}
-                                    className="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded font-bold shadow-sm transition disabled:bg-gray-400 disabled:cursor-not-allowed"
+                                    className="mt-4 ml-30 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded font-bold shadow-sm transition disabled:bg-gray-400 disabled:cursor-not-allowed"
                                 >
-                                    {quizLoading ? 'Đang tạo quiz...' : 'Tạo quiz từ phụ đề'}
+                                    {quizLoading ? 'Generate quiz...' : 'Quiz generated'}
                                 </button>
                             </div>
                         </>
@@ -225,7 +224,7 @@ const ManagerQuizz = () => {
             )}
             {generatedQuizzes.length > 0 && (
                 <div className="mb-10">
-                    <h2 className="text-2xl font-bold mb-4 text-gray-800">Quiz được tạo</h2>
+                    <h2 className="text-2xl font-bold mb-4 text-gray-800">Quiz generated</h2>
                     <div className="space-y-8">
                         {generatedQuizzes.map((quiz, index) => (
                             <div key={index} className="bg-white rounded-lg shadow-lg p-6 w-full">

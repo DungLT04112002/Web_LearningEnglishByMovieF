@@ -26,22 +26,27 @@ const TaskBar = () => {
 
                 <div className="mx-[1vw]">
                     <Link href="/Navigate/manager/user">
-                        <p className="font-bold ">Quản lí user</p>
+                        <p className="font-bold ">Manage user</p>
                     </Link>
                 </div>
                 <div className="mx-[1vw]">
                     <Link href="/Navigate/manager/movie">
-                        <p className="font-bold  ">Quản lí phim</p>
+                        <p className="font-bold  ">Manage Movies </p>
                     </Link>
                 </div>
                 <div className="mx-[1vw]">
                     <Link href="/Navigate/manager/subtitle">
-                        <p className="font-bold ">Quản lí subtitle</p>
+                        <p className="font-bold ">Manage Subtitles</p>
                     </Link>
                 </div>
                 <div className="mx-[1vw]">
                     <Link href="/Navigate/manager/manager_quizz">
-                        <p className="font-bold ">Quản lí bài tập</p>
+                        <p className="font-bold ">Gen Quizs</p>
+                    </Link>
+                </div>
+                <div className="mx-[1vw]">
+                    <Link href="/Navigate/user/useraccount">
+                        <p className="font-bold text-white">Person</p>
                     </Link>
                 </div>
             </div>

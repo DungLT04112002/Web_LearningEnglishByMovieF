@@ -17,8 +17,8 @@ const FavoritePage = () => {
             setIsLoggedIn(true);
             fetchFavorites();
         } else {
-            setLoading(false);
-            router.push('/Navigate/login');
+            alert('Bạn chưa đăng nhập. Vui lòng đăng nhập để lấy thông tin danh sách yêu thích.');
+            router.push('/');
         }
     }, []);
 
@@ -122,7 +122,7 @@ const FavoritePage = () => {
                                 onClick={() => router.push('/Navigate/user/moviepage')}
                                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition duration-300"
                             >
-                                Browse Movies
+                                Go to movie page
                             </button>
                         )}
                     </div>
