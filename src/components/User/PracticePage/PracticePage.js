@@ -4,6 +4,7 @@ import TaskBar from "../TaskBar/TaskBar";
 import axios from "axios";
 import { useParams, useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
+import ChatBotBox from "../ChatBot/ChatBot";
 
 const BASE_API_URL = 'http://localhost:8081/api'; // Đặt URL gốc của API ở đây
 
@@ -28,7 +29,7 @@ const PracticePage = () => {
         // Trường hợp 1: Từ vào để làm bài tập
         // Trường hợp 2: Từ trang HistoryPracticePage vào để chi tiết bài kiểm tra cũ
         if (searchParams.get('viewResult') === '1') {
-        // Trường hợp 1: Từ vào để làm bài tập
+            // Trường hợp 1: Từ vào để làm bài tập
             setIsViewResult(true);
             const result = JSON.parse(localStorage.getItem('practiceResultView'));
             if (result) {
@@ -198,19 +199,30 @@ const PracticePage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <TaskBar />
+            <div className="top-0 fixed w-[100vw] z-30">
+                <TaskBar />
+            </div>
+
             <div className="flex">
+                <div className="left-0 fixed">
+                    <button
+                        onClick={calculateScore}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md"
+                    >
+                        Submit Quiz
+                    </button>
+                </div>
                 {/* Main Content - 80% width */}
                 <div className="w-4/5 p-8">
-                    <div className="max-w-4xl mx-auto">
+                    <div className=" mx-auto">
                         <h1 className="text-4xl font-bold text-gray-800 text-center mb-8">Practice Quiz</h1>
                         {/* Filter dropdown */}
                         <div className="flex items-center space-x-4 my-10">
-                            <label className="text-sm font-medium text-gray-700">Filter by type:</label>
+                            <label className="text-xl font-bold font-medium text-gray-700">Filter by type:</label>
                             <select
                                 value={selectedQuizType}
                                 onChange={(e) => setSelectedQuizType(e.target.value)}
-                                className="rounded-md border-gray-300 shadow-sm text-black"
+                                className="rounded-md  font-bold  text-xl border-gray-300 shadow-sm text-black"
                             >
                                 <option value="all">All Types</option>
                                 <option value="reading">Reading Comprehension</option>
@@ -302,8 +314,10 @@ const PracticePage = () => {
                 </div>
 
                 {/* Navigation Panel - 20% width */}
-                <div className="w-1/5 p-6 bg-white border-l border-gray-200 min-h-screen sticky top-0">
-                    <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="w-1/5 mt-24 fixed top-0 right-0 bg-white border-l border-gray-200 p-6 flex flex-col">
+
+                    {/* Scrollable Content */}
+                    <div className="flex-1 overflow-y-auto mt-4  max-h-screen  pr-1">
                         <h3 className="text-xl font-bold text-gray-800 mb-6">Question Navigation</h3>
                         <div className="grid grid-cols-3 gap-3 mb-8">
                             {allQuestions.map((question, index) => (
@@ -331,7 +345,7 @@ const PracticePage = () => {
                             </div>
                         )}
 
-                        <div className="space-y-3">
+                        <div className="space-y-3 mb-6">
                             <button
                                 onClick={calculateScore}
                                 className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md"
@@ -347,9 +361,12 @@ const PracticePage = () => {
                                 </button>
                             )}
                         </div>
+
                     </div>
                 </div>
+
             </div>
+
         </div>
     );
 };

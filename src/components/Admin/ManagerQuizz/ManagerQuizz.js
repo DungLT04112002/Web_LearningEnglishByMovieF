@@ -381,9 +381,9 @@ const MovieQuiz = ({ movieId }) => {
                         <div className="flex justify-between items-center mb-4">
                             <div>
                                 <div className="text-lg font-semibold text-gray-800">
-                                    {quiz.quiz_type === 'reading' ? quiz.passage : `Quiz Type: ${quiz.quiz_type}`}
+                                    {quiz.quiz_type === 'reading' || quiz.quiz_type === 'dialogue_reordering' ? quiz.passage : `Quiz Type: ${quiz.quiz_type}`}
                                 </div>
-                                <div className="text-sm text-gray-500 font-semibold">Type: {quiz.quiz_type || 'reading'}</div>
+                                <div className="text-sm text-gray-500 font-semibold">Type: {quiz.quiz_type}</div>
                             </div>
                             <div className="flex items-center gap-4">
                                 <button

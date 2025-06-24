@@ -8,9 +8,8 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/ge
 
 // --- Sử dụng biến môi trường với tiền tố NEXT_PUBLIC_ ---
 const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
+let globalChatSession = null;
 
-// --- Log để kiểm tra ---
-console.log("[gemini.mjs] Checking env var NEXT_PUBLIC_GOOGLE_API_KEY:", apiKey ? 'Exists' : 'MISSING!');
 
 // --- Kiểm tra API Key ---
 if (!apiKey) {

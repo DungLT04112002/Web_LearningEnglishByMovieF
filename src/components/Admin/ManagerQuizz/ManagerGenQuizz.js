@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { FiTrash2, FiSave, FiEdit } from 'react-icons/fi';
 import axios from 'axios';
-import createQuiz, { QUIZ_TYPES } from '../../../service/GeminiGenQuizz.mjs';
+import createQuiz, { QUIZ_TYPES } from '../../../service/GeminiGenQuizz.js';
 import MQuiz from './ManagerQuizz';
 
 const BASE_API_URL = 'http://localhost:8081/api';
@@ -39,7 +39,7 @@ const ManagerQuizz = () => {
     const fetchMovies = async () => {
         try {
             const response = await axios.get(`${BASE_API_URL}/movies`);
-            if (response.data && Array.isArray(response.data)) {
+            if (response.data) {
                 setMovies(response.data);
             } else {
                 setQuizError('Không thể lấy danh sách phim');
