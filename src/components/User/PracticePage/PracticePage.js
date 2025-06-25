@@ -1,10 +1,11 @@
 "use client"
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import TaskBar from "../TaskBar/TaskBar";
 import axios from "axios";
 import { useParams, useSearchParams } from 'next/navigation';
 import { useRouter } from 'next/navigation';
 import ChatBotBox from "../ChatBot/ChatBot";
+import { FiMessageCircle } from "react-icons/fi";
 
 const BASE_API_URL = 'http://localhost:8081/api'; // Đặt URL gốc của API ở đây
 
@@ -23,6 +24,9 @@ const PracticePage = () => {
     const [questionNumberMap, setQuestionNumberMap] = useState({}); // Map để lưu số thứ tự của câu hỏi
     const [selectedQuizType, setSelectedQuizType] = useState('all'); // Thêm state cho loại quiz
     const [isViewResult, setIsViewResult] = useState(false);
+    const [showChat, setShowChat] = useState(false);
+    const [elapsedTime, setElapsedTime] = useState(0);
+    const timerRef = useRef(null);
 
     useEffect(() => {
         // Có 2 trường hợp nhảy vào trang PracticePage
@@ -77,6 +81,17 @@ const PracticePage = () => {
             }
         }
     }, [params, searchParams]);
+
+    useEffect(() => {
+        if (!showScore) {
+            timerRef.current = setInterval(() => {
+                setElapsedTime((prev) => prev + 1);
+            }, 1000);
+        } else {
+            clearInterval(timerRef.current);
+        }
+        return () => clearInterval(timerRef.current);
+    }, [showScore]);
 
     const fetchMovieQuizzes = async () => {
         try {
@@ -180,6 +195,7 @@ const PracticePage = () => {
         setScore(0);
         setShowAnswers(false);
         setAnswerResults({});
+        setElapsedTime(0);
     };
 
     const scrollToQuestion = (questionId) => {
@@ -197,21 +213,19 @@ const PracticePage = () => {
         router.push(`/Navigate/user/practicepage/${item.movieId}?viewResult=1`);
     };
 
+    const formatTime = (seconds) => {
+        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gray-50 ">
             <div className="top-0 fixed w-[100vw] z-30">
                 <TaskBar />
             </div>
 
             <div className="flex">
-                <div className="left-0 fixed">
-                    <button
-                        onClick={calculateScore}
-                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md"
-                    >
-                        Submit Quiz
-                    </button>
-                </div>
                 {/* Main Content - 80% width */}
                 <div className="w-4/5 p-8">
                     <div className=" mx-auto">
@@ -314,11 +328,15 @@ const PracticePage = () => {
                 </div>
 
                 {/* Navigation Panel - 20% width */}
-                <div className="w-1/5 mt-24 fixed top-0 right-0 bg-white border-l border-gray-200 p-6 flex flex-col">
-
-                    {/* Scrollable Content */}
-                    <div className="flex-1 overflow-y-auto mt-4  max-h-screen  pr-1">
-                        <h3 className="text-xl font-bold text-gray-800 mb-6">Question Navigation</h3>
+                <div className="w-1/5 fixed top-16 right-0 h-[calc(100vh-64px)] bg-white border-l border-gray-200 flex flex-col p-6 z-20">
+                    {/* Tiêu đề luôn hiển thị */}
+                    <h3 className="text-xl font-bold text-gray-800 mb-6 flex-shrink-0">Question Navigation</h3>
+                    {/* Thời gian làm bài */}
+                    <div className="mb-4 text-base text-gray-700 font-semibold flex items-center gap-2">
+                        <span>⏱️ Thời gian:</span> <span className="font-mono">{formatTime(elapsedTime)}</span>
+                    </div>
+                    {/* Nội dung cuộn được */}
+                    <div className="flex-1 overflow-y-auto">
                         <div className="grid grid-cols-3 gap-3 mb-8">
                             {allQuestions.map((question, index) => (
                                 <button
@@ -337,34 +355,40 @@ const PracticePage = () => {
                                 </button>
                             ))}
                         </div>
-
                         {showScore && (
                             <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl border border-blue-200">
                                 <h4 className="font-semibold text-gray-800 mb-2">Your Score</h4>
                                 <p className="text-3xl font-bold text-blue-600">{score.toFixed(1)}%</p>
                             </div>
                         )}
-
-                        <div className="space-y-3 mb-6">
-                            <button
-                                onClick={calculateScore}
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md"
-                            >
-                                Submit Quiz
-                            </button>
-                            {showScore && (
-                                <button
-                                    onClick={handleRetakeQuiz}
-                                    className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md"
-                                >
-                                    Retake Quiz
-                                </button>
-                            )}
-                        </div>
-
+                    </div>
+                    {/* Nút Submit/Retake luôn ở dưới */}
+                    <div className="space-y-3 mt-6 flex-shrink-0">
+                        {!showScore && (
+                            <button onClick={calculateScore} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md">Submit Quiz</button>
+                        )}
+                        {showScore && (
+                            <button onClick={handleRetakeQuiz} className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors duration-200 shadow-md">Retake Quiz</button>
+                        )}
                     </div>
                 </div>
 
+            </div>
+
+            {/* Chatbox floating */}
+            <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+                {!showChat ? (
+                    <button
+                        onClick={() => setShowChat(true)}
+                        className="bg-orange-400 hover:bg-orange-500 text-white px-4 py-3 rounded-full shadow-lg flex items-center gap-2 justify-center"
+                        aria-label="Open chat"
+                    >
+                        <FiMessageCircle className="text-2xl" />
+                        <span className="font-semibold text-base">Chatbot AI</span>
+                    </button>
+                ) : (
+                    <ChatBotBox onClose={() => setShowChat(false)} />
+                )}
             </div>
 
         </div>

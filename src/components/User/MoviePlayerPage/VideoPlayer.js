@@ -234,27 +234,28 @@ const VideoDemo = () => {
                                     controls={true}
                                     width="100%"
                                     height="100%"
+                                    style={{ aspectRatio: "30/2", objectFit: "cover" }}
                                     onProgress={handleProgress}
                                 />
                             )}
                         </Suspense>
-
-                        {/* Overlay subtitle */}
-                        {getCurrentSubtitle() && (
-                            <div className="absolute bottom-0 left-0 mb-[6vh] w-full bg-black bg-opacity-50 p-4 text-white text-xl text-center z-10">
-                                {isEngSub && findMatchingSubtitle(englishSubtitles, currentTime) && (
-                                    <div className="mb-2">
-                                        {findMatchingSubtitle(englishSubtitles, currentTime).text}
-                                    </div>
-                                )}
-                                {isVietSub && findMatchingSubtitle(vietnameseSubtitles, currentTime) && (
-                                    <div>
-                                        {findMatchingSubtitle(vietnameseSubtitles, currentTime).text}
-                                    </div>
-                                )}
-                            </div>
-                        )}
                     </div>
+
+                    {/* Subtitle dưới video */}
+                    {getCurrentSubtitle() && (
+                        <div className="w-full bg-black bg-opacity-70 p-4 text-white text-xl text-center rounded-b-lg mt-0">
+                            {isEngSub && findMatchingSubtitle(englishSubtitles, currentTime) && (
+                                <div className="mb-2">
+                                    {findMatchingSubtitle(englishSubtitles, currentTime).text}
+                                </div>
+                            )}
+                            {isVietSub && findMatchingSubtitle(vietnameseSubtitles, currentTime) && (
+                                <div>
+                                    {findMatchingSubtitle(vietnameseSubtitles, currentTime).text}
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Controls */}
                     <div className="flex flex-wrap gap-4 justify-center">
