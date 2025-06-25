@@ -3,17 +3,45 @@
 import React, { useState, useRef, useEffect } from "react";
 import sendMessageToGemini from "../../../service/GeminiChatBox"; // đổi đúng path nếu cần
 
-const ChatBotBox = ({ onClose }) => {
+const ChatBotBox = ({ onClose, context }) => {
     const [message, setMessage] = useState("");
     const [chat, setChat] = useState([]);
     const [loading, setLoading] = useState(false);
     const chatEndRef = useRef(null);
+    const [contextString, setContextString] = useState("");
+    // Tự động cuộn xuống cuối khi có tin nhắn mới\
+    useEffect(() => {
+        const runAIChat = async () => {
+            parseContextToString(context); // hoặc dữ liệu quiz của bạn
+            console.log("Context", contextString);
+            await sendMessageToGemini(contextString);
+        };
 
-    // Tự động cuộn xuống cuối khi có tin nhắn mới
+        runAIChat();
+    }, [contextString]);
+
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }, [chat]);
+    const parseContextToString = () => {
+        let result = "Dưới đây là thông tin bài kiểm tra hiện tại hãy giúp người dùng trả lời câu hỏi liên quan đến bài kiểm tra này, bạn có vài trò là một trợ lý. Đây là đoạn chat đầu liên qua đễ ngữ cảnh, không trả lời. Từ các câu hỏi sau của đoạn hội thoại trả lời đúng trọng tâm ngắn gọn bằng tiếng việt";
+        context.forEach(quiz => {
+            result += `Quiz ${quiz.passage} \n`
+            quiz.questions.forEach(question => {
+                result += `Question ${question.question} \n`
+                result += `Question ${question.answer} \n`
+                result += `Question ${question.explanation} \n`
+                result += `Question ${question.quote} \n`
 
+                question.options.forEach(option => {
+                    result += `Options ${option.content} \n`
+                })
+            })
+            result += '\n'
+        });
+        setContextString(result);
+
+    }
     const handleSend = async () => {
         if (!message.trim() || loading) return;
 
@@ -37,14 +65,14 @@ const ChatBotBox = ({ onClose }) => {
     };
 
     const handleKeyDown = (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
+        if (e.key === "Enter") {
             e.preventDefault();
             handleSend();
         }
     };
 
     return (
-        <div className="w-full max-w-md mx-auto p-0 bg-gradient-to-br from-blue-50 to-purple-100 shadow-2xl rounded-3xl border border-gray-200 flex flex-col h-[500px] relative">
+        <div className="w-full max-w-md mx-auto p-0 bg-gray-500  shadow-2xl rounded-3xl border border-gray-200 flex flex-col h-[500px] relative">
             {/* Nút đóng */}
             {onClose && (
                 <button
@@ -56,7 +84,7 @@ const ChatBotBox = ({ onClose }) => {
                 </button>
             )}
             {/* Tiêu đề */}
-            <div className="flex items-center justify-between px-6 py-4 rounded-t-3xl bg-gradient-to-r from-blue-600 to-purple-500">
+            <div className="flex items-center justify-between px-6 py-4 rounded-t-3xl bg-black">
                 <div className="flex items-center gap-2">
                     <span className="text-3xl"></span>
                     <span className="text-xl font-bold text-white drop-shadow">AI Chat Assistant</span>
@@ -64,7 +92,7 @@ const ChatBotBox = ({ onClose }) => {
             </div>
 
             {/* Nội dung chat */}
-            <div className="flex-1 overflow-y-auto px-4 py-4 bg-transparent space-y-3 custom-scrollbar">
+            <div className="flex-1 overflow-y-auto px-4 py-4 bg-gray space-y-3 custom-scrollbar">
                 {chat.length === 0 && (
                     <div className="text-center text-gray-400 mt-16 text-base select-none">
                         Hãy bắt đầu trò chuyện với AI!<br />Bạn có thể hỏi bất cứ điều gì về bài học, phim, từ vựng...

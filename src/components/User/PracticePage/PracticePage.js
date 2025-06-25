@@ -30,10 +30,10 @@ const PracticePage = () => {
 
     useEffect(() => {
         // Có 2 trường hợp nhảy vào trang PracticePage
-        // Trường hợp 1: Từ vào để làm bài tập
-        // Trường hợp 2: Từ trang HistoryPracticePage vào để chi tiết bài kiểm tra cũ
+        // Trường hợp 1: Từ trang HistoryPracticePage vào để chi tiết bài kiểm tra cũ
+        // Trường hợp 2: Từ phim vào để làm bài tập
         if (searchParams.get('viewResult') === '1') {
-            // Trường hợp 1: Từ vào để làm bài tập
+            // Trường hợp 1: Từ trang HistoryPracticePage vào để chi tiết bài kiểm tra cũ
             setIsViewResult(true);
             const result = JSON.parse(localStorage.getItem('practiceResultView'));
             if (result) {
@@ -72,7 +72,7 @@ const PracticePage = () => {
                 setQuestionNumberMap(numberMap);
             }
         } else {
-            // Trường hợp 2: Từ trang HistoryPracticePage vào để chi tiết bài kiểm tra cũ
+            // Trường hợp 2: Từ phim vào để làm bài tập
             console.log("movieid", params.movieId);
             if (params?.movieId) {
                 setMovieId(params.movieId);
@@ -84,10 +84,12 @@ const PracticePage = () => {
 
     useEffect(() => {
         if (!showScore) {
+            // tăng biến elapsedTime lên 1 sau mỗi giây
             timerRef.current = setInterval(() => {
                 setElapsedTime((prev) => prev + 1);
             }, 1000);
         } else {
+            // Xóa  elapsedTime
             clearInterval(timerRef.current);
         }
         return () => clearInterval(timerRef.current);
@@ -138,6 +140,7 @@ const PracticePage = () => {
     };
 
     const handleAnswerSelect = (questionId, optionId) => {
+        // Thêm vào cuối đối tượng SelectedAnswers
         setSelectedAnswers(prev => ({
             ...prev,
             [questionId]: optionId // key questionID động cho value optionID
@@ -208,11 +211,6 @@ const PracticePage = () => {
         ? quizzes
         : quizzes.filter(quiz => quiz.quiz_type === selectedQuizType);
 
-    const handleCardClick = (item) => {
-        localStorage.setItem('practiceResultView', JSON.stringify(item));
-        router.push(`/Navigate/user/practicepage/${item.movieId}?viewResult=1`);
-    };
-
     const formatTime = (seconds) => {
         const m = Math.floor(seconds / 60).toString().padStart(2, '0');
         const s = (seconds % 60).toString().padStart(2, '0');
@@ -251,76 +249,77 @@ const PracticePage = () => {
                                     {quiz.passage}
                                 </div>
                                 <div className="space-y-8">
-                                    {quiz.questions.map((question) => (
-                                        <div
-                                            key={question.id}
-                                            id={`question-${question.id}`}
-                                            className={`relative border border-gray-200 rounded-lg p-6 transition-all duration-200 ${showAnswers
-                                                ? answerResults[question.id]?.isCorrect
-                                                    ? 'bg-green-50 border-green-200'
-                                                    : 'bg-red-50 border-red-200'
-                                                : 'hover:border-blue-200 hover:shadow-md'
-                                                }`}
-                                        >
-                                            {/* Question Number Badge - Moved to left side */}
-                                            <div className="absolute -top-3 -left-3 bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-md">
-                                                {questionNumberMap[question.id]}
-                                            </div>
-
-                                            <div className="font-semibold text-lg text-gray-800 mb-4">
-                                                {question.question}
-                                            </div>
-                                            <div className="ml-4 space-y-3">
-                                                {question.options.map((option) => (
-                                                    <div
-                                                        key={option.id}
-                                                        className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 ${showAnswers
-                                                            ? option.label.toLowerCase() === question.answer.toLowerCase()
-                                                                ? 'bg-green-100 border-green-300'
-                                                                : selectedAnswers[question.id] === option.id && !answerResults[question.id]?.isCorrect
-                                                                    ? 'bg-red-100 border-red-300'
-                                                                    : 'bg-gray-50'
-                                                            : selectedAnswers[question.id] === option.id
-                                                                ? 'bg-blue-50 border-blue-200'
-                                                                : 'bg-gray-50 hover:bg-gray-100'
-                                                            } border`}
-                                                    >
-                                                        <input
-                                                            type="radio"
-                                                            id={`option-${option.id}`}
-                                                            name={`question-${question.id}`}
-                                                            value={option.id}
-                                                            onChange={() => handleAnswerSelect(question.id, option.id)}
-                                                            className="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500"
-                                                        />
-                                                        <label
-                                                            htmlFor={`option-${option.id}`}
-                                                            className="flex-1 text-gray-700 cursor-pointer"
-                                                        >
-                                                            <span className="font-medium">{option.label}.</span> {option.content}
-                                                        </label>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            {showAnswers && (
-                                                <div className="mt-6 p-4 bg-white rounded-lg border border-gray-200">
-                                                    <p className="text-sm text-gray-700">
-                                                        <span className="font-semibold text-green-600">Correct Answer:</span> {question.answer.toUpperCase()}
-                                                    </p>
-                                                    {question.explanation && (
-                                                        <p className="text-sm text-gray-600 mt-2">
-                                                            <span className="font-semibold text-blue-600">Explanation:</span> {question.explanation}
-                                                        </p>
-                                                    )}
-                                                    {question.quote && (
-                                                        <p className="text-sm text-gray-600 mt-2">
-                                                            <span className="font-semibold text-purple-600">Quote:</span> {question.quote}
-                                                        </p>
-                                                    )}
+                                    {
+                                        quiz.questions.map((question) => (
+                                            <div
+                                                key={question.id}
+                                                id={`question-${question.id}`}
+                                                className={`relative border border-gray-200 rounded-lg p-6 transition-all duration-200 ${showAnswers
+                                                    ? answerResults[question.id]?.isCorrect
+                                                        ? 'bg-green-50 border-green-200'
+                                                        : 'bg-red-50 border-red-200'
+                                                    : 'hover:border-blue-200 hover:shadow-md'
+                                                    }`}
+                                            >
+                                                {/* Question Number Badge - Moved to left side */}
+                                                <div className="absolute -top-3 -left-3 bg-blue-500 text-white w-8 h-8 rounded-full flex items-center justify-center font-bold shadow-md">
+                                                    {questionNumberMap[question.id]}
                                                 </div>
-                                            )}
-                                        </div>
-                                    ))}
+
+                                                <div className="font-semibold text-lg text-gray-800 mb-4">
+                                                    {question.question}
+                                                </div>
+                                                <div className="ml-4 space-y-3">
+                                                    {question.options.map((option) => (
+                                                        <div
+                                                            key={option.id}
+                                                            className={`flex items-center space-x-3 p-3 rounded-lg transition-all duration-200 ${showAnswers
+                                                                ? option.label.toLowerCase() === question.answer.toLowerCase()
+                                                                    ? 'bg-green-100 border-green-300'
+                                                                    : selectedAnswers[question.id] === option.id && !answerResults[question.id]?.isCorrect
+                                                                        ? 'bg-red-100 border-red-300'
+                                                                        : 'bg-gray-50'
+                                                                : selectedAnswers[question.id] === option.id
+                                                                    ? 'bg-blue-50 border-blue-200'
+                                                                    : 'bg-gray-50 hover:bg-gray-100'
+                                                                } border`}
+                                                        >
+                                                            <input
+                                                                type="radio"
+                                                                id={`option-${option.id}`}
+                                                                name={`question-${question.id}`}
+                                                                value={option.id}
+                                                                onChange={() => handleAnswerSelect(question.id, option.id)}
+                                                                className="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500"
+                                                            />
+                                                            <label
+                                                                htmlFor={`option-${option.id}`}
+                                                                className="flex-1 text-gray-700 cursor-pointer"
+                                                            >
+                                                                <span className="font-medium">{option.label}.</span> {option.content}
+                                                            </label>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                {showAnswers && (
+                                                    <div className="mt-6 p-4 bg-white rounded-lg border border-gray-200">
+                                                        <p className="text-sm text-gray-700">
+                                                            <span className="font-semibold text-green-600">Correct Answer:</span> {question.answer.toUpperCase()}
+                                                        </p>
+                                                        {question.explanation && (
+                                                            <p className="text-sm text-gray-600 mt-2">
+                                                                <span className="font-semibold text-blue-600">Explanation:</span> {question.explanation}
+                                                            </p>
+                                                        )}
+                                                        {question.quote && (
+                                                            <p className="text-sm text-gray-600 mt-2">
+                                                                <span className="font-semibold text-purple-600">Quote:</span> {question.quote}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
                                 </div>
                             </div>
                         ))}
@@ -328,7 +327,7 @@ const PracticePage = () => {
                 </div>
 
                 {/* Navigation Panel - 20% width */}
-                <div className="w-1/5 fixed top-16 right-0 h-[calc(100vh-64px)] bg-white border-l border-gray-200 flex flex-col p-6 z-20">
+                <div className="w-1/5 fixed top-16 right-0 h-[calc(85vh-64px)] bg-white border-l border-gray-200 flex flex-col p-6 z-20">
                     {/* Tiêu đề luôn hiển thị */}
                     <h3 className="text-xl font-bold text-gray-800 mb-6 flex-shrink-0">Question Navigation</h3>
                     {/* Thời gian làm bài */}
@@ -380,14 +379,14 @@ const PracticePage = () => {
                 {!showChat ? (
                     <button
                         onClick={() => setShowChat(true)}
-                        className="bg-orange-400 hover:bg-orange-500 text-white px-4 py-3 rounded-full shadow-lg flex items-center gap-2 justify-center"
+                        className="bg-gray-800 hover:bg-black-500 text-white px-4 py-3 rounded-full shadow-lg flex items-center gap-2 justify-center"
                         aria-label="Open chat"
                     >
                         <FiMessageCircle className="text-2xl" />
                         <span className="font-semibold text-base">Chatbot AI</span>
                     </button>
                 ) : (
-                    <ChatBotBox onClose={() => setShowChat(false)} />
+                    <ChatBotBox onClose={() => setShowChat(false)} context={quizzes} />
                 )}
             </div>
 
