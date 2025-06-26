@@ -78,10 +78,8 @@ const favoritesController = require('../Controller/FavoritesController/Favorites
 
 // Middleware xử lý JSON (giữ nguyên)
 // Express v4.16.0 trở lên có sẵn express.json() và express.urlencoded(), không cần body-parser riêng
-router.use(express.json({ limit: '10mb' }));
-router.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Example of protected routes with role-based access
+// Movie Routes
 router.post('/api/movies', authenticateToken(['admin']), movieController.createMovie);
 router.get('/api/movies', movieController.getMovies);
 router.get('/api/movies/:id', movieController.getMovieById);
@@ -89,18 +87,12 @@ router.put('/api/movies/:id', authenticateToken(['admin']), movieController.upda
 router.delete('/api/movies/:id', authenticateToken(['admin']), movieController.deleteMovie);
 
 
-// --- Subtitle routes ---
-// Routes that allow both admin and employee access
+//Subtile  routes 
 router.post('/api/subtitles', authenticateToken(['admin', 'employee']), uploadSubtitle.single('subtitleFile'), subController.addSubtitle);
-// Lấy tất cả subtitles (Không cần Multer)
 router.get('/api/subtitles', subController.getAllSubtitles);
-// Lấy subtitles của một phim (Không cần Multer)
 router.get('/api/movies/:movie_id/subtitles', subController.getMovieSubtitles);
-// Lấy subtitle theo ngôn ngữ (Không cần Multer)
 router.get('/api/movies/:movie_id/subtitles/:language', subController.getSubtitleByLanguage);
-// Áp dụng middleware multer cho route cập nhật subtitle
 router.put('/api/subtitles/:id', authenticateToken(['admin', 'employee']), uploadSubtitle.single('subtitleFile'), subController.updateSubtitle);
-// Xóa subtitle (Không cần Multer)
 router.delete('/api/subtitles/:id', subController.deleteSubtitle);
 
 // Quiz routes
@@ -141,10 +133,7 @@ router.delete('/api/favorites', authenticateToken(['user', 'admin']), favoritesC
 router.get('/api/favorites', authenticateToken(['user', 'admin']), favoritesController.getUserFavorites);
 router.get('/api/favorites/check/:movie_id', authenticateToken(['user', 'admin']), favoritesController.checkIfFavorited);
 
-// Admin routes for user management
-// router.get('/api/admin/users', accountController.getAllUsers);
-// router.post('/api/admin/users', accountController.createUser);
-// router.put('/api/admin/users/:userId/role', accountController.updateUserRole);
+// Account route
 router.get('/api/admin/users', accountController.getAllUsers);
 router.post('/api/admin/users', authenticateToken(['admin']), accountController.createUser);
 router.put('/api/admin/users/:userId/role', authenticateToken(['admin']), accountController.updateUserRole);

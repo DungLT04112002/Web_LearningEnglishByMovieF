@@ -53,8 +53,8 @@ const LoginGoogle = async (req, res) => {
 
         connection.query(query, [email], (error, results) => {
             if (error) {
-                console.error('Database error:', error);
-                return res.status(500).json({ message: 'Internal server error' });
+
+                return res.status(500).json({ message: 'Server error' });
             }
 
             if (results.length > 0) {
@@ -73,8 +73,8 @@ const LoginGoogle = async (req, res) => {
 
                 connection.query(insertQuery, newUser, (insertError, insertResult) => {
                     if (insertError) {
-                        console.error('Error creating new user:', insertError);
-                        return res.status(500).json({ message: 'Failed to create user' });
+                        console.error('Lỗi tạo người dùng:', insertError);
+                        return res.status(500).json({ message: 'Lỗi tạo người dùng' });
                     }
                     const newUserId = insertResult.insertId;
                     const userForToken = {

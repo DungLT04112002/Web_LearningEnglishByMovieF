@@ -153,9 +153,6 @@ const updateAvatar = async (req, res) => {
         if (!req.file) {
             return res.status(400).json({ message: 'Avatar file is required' });
         }
-
-        // Create a URL path for the avatar
-        // The path should correspond to how you serve static files
         const avatar_url = `/uploads/avatars/${req.file.filename}`;
 
         const query = `

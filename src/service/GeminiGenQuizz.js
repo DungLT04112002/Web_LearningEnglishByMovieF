@@ -1,41 +1,22 @@
-// !!!!! CẢNH BÁO BẢO MẬT NGHIÊM TRỌNG !!!!!
-// FILE NÀY GỌI GOOGLE API VÀ CÓ THỂ LÀM LỘ API KEY NẾU IMPORT TRỰC TIẾP VÀO CLIENT COMPONENT.
-// HÃY SỬ DỤNG API ROUTE TRONG NEXT.JS ĐỂ ĐẢM BẢO AN TOÀN.
-// XEM XÉT KỸ RỦI RO TRƯỚC KHI SỬ DỤNG CODE NÀY.
 
-// --- Sử dụng import (ES Module) ---
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
-
-// --- Sử dụng biến môi trường với tiền tố NEXT_PUBLIC_ ---
+import { GoogleGenerativeAI } from "@google/generative-ai";
 const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
-let globalChatSession = null;
-
-
-// --- Kiểm tra API Key ---
 if (!apiKey) {
-  // Nếu vẫn lỗi ở đây, vấn đề có thể là file .env.local không được load đúng cách
   throw new Error('NEXT_PUBLIC_GOOGLE_API_KEY is missing. Check your .env.local file and ensure it is loaded correctly by Next.js.');
 }
-
-// --- Khởi tạo Google AI Client ---
+// Khởi tạo Google AI Client 
 const genAI = new GoogleGenerativeAI(apiKey);
 const model = genAI.getGenerativeModel({
   model: "gemini-1.5-flash", // Hoặc "gemini-1.5-pro"
 });
-
-// --- Bước 3: Cấu hình (tương tự API Route) ---
-const safetySettings = [
-  { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_MEDIUM_AND_ABOVE },
-  // Thêm các cài đặt an toàn khác nếu cần
-];
+// Cấu hình
 const generationConfig = {
-  temperature: 0.7,
+  temperature: 0.7, //mức độ sáng tạo/ ngẫu nhiên của AI
   topP: 0.95,
   topK: 64,
   maxOutputTokens: 8192,
   responseMimeType: "text/plain",
 };
-
 // Định nghĩa các loại quiz
 const QUIZ_TYPES = {
   READING: 'reading',
@@ -43,7 +24,6 @@ const QUIZ_TYPES = {
   TRANSLATION: 'translation',
   EQUIVALENT: 'equivalent'
 };
-
 // Chuyển PROMPTS thành hàm để nhận subtitle
 const getPrompt = (quizType, subtitle) => {
   const prompts = {
@@ -222,65 +202,32 @@ const getPrompt = (quizType, subtitle) => {
         ]
     `
   };
-
   return prompts[quizType];
 };
-
-// Cập nhật hàm createQuiz
 async function createQuiz(subtitle, quizType = QUIZ_TYPES.READING) {
-  // Kiểm tra API key
-  const currentApiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY;
-  if (!currentApiKey) {
-    throw new Error('NEXT_PUBLIC_GOOGLE_API_KEY is missing when trying to create quiz.');
-  }
-
   try {
-    if (!subtitle || typeof subtitle !== 'string') {
-      throw new Error('Invalid subtitle input');
-    }
-
-    // Kiểm tra quiz type hợp lệ
-    if (!Object.values(QUIZ_TYPES).includes(quizType)) {
-      throw new Error('Invalid quiz type');
-    }
-
     // Lấy prompt tương ứng với quiz type
     const prompt = getPrompt(quizType, subtitle);
-
-    console.log("[gemini.mjs] Sending request to Google AI...");
     const chatSession = model.startChat({
       generationConfig,
-      safetySettings,
-      history: [],
+      history: [], // không truyền lịch sử chat cũ
     });
-
     const result = await chatSession.sendMessage(prompt);
     let responseText = result.response.text();
-    console.log("[gemini.mjs] Received raw response text:", responseText);
-
-    // Clean up the response text
+    // Xóa tất cả các đoạn mở đầu ```json (hoặc ```json kèm khoảng trắng/newline) trong chuỗi
     responseText = responseText
       .replace(/```json\s*/g, '')
       .replace(/```\s*/g, '')
       .trim();
-
     try {
       const quiz = JSON.parse(responseText);
-      console.log("[gemini.mjs] Parsed JSON successfully.");
       return quiz;
     } catch (parseError) {
-      console.error('[gemini.mjs] Failed to parse JSON response:', parseError, 'Raw text:', responseText);
-      const detailedError = new Error(`Invalid JSON format received from Gemini: ${parseError.message}`);
-      detailedError.rawContent = responseText;
-      throw detailedError;
+      console.log("Lỗi:" + parseError)
     }
-
   } catch (error) {
-    console.error('[gemini.mjs] Error creating quiz:', error);
-    throw new Error(`Failed to create quiz via Gemini: ${error.message}`);
+    throw new Error(`Lỗi tạo quizz: ${error.message}`);
   }
 }
-
-// Export cả QUIZ_TYPES để có thể sử dụng ở các component khác
 export { QUIZ_TYPES };
 export default createQuiz;
